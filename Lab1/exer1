@@ -1,0 +1,3 @@
+echo Introdueix un nom
+read nom
+echo Bon dia, $nom
