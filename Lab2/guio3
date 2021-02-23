@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Guio3: llista camp + nom fitxers
+#	(filtra la primera linia)
+#	(retorna numero de linies)
+
+ls -l $1 | tr -s ' ' >fa
+x=$(cat fa | wc -l)
+let x=x-1
+cat fa | tail -$x >fa
+cat fa | cut -d' ' -f9 >fb
+cat fa | cut -d' ' -f$2 >fc
+paste fc fb
+rm fa fb fc
+exit $x

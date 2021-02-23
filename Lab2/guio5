@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Guio5: genera les taules de multiplicar
+
+if [ $# -ne 1 ]
+then
+	echo "Us: ./guio5 numero"
+	exit 1
+else
+	x=1
+	while [ $x -le 10 ]
+	do
+		let z=x*$1
+		echo "$1 x $x = $z"
+		let x=x+1
+	done
+fi

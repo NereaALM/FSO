@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Guio4: llisteu un camp + un nom de fitxer
+#	(verificant els arguments i invocant a ./guio3)
+
+if [ $# -ne 2 ]
+then
+	echo "Us: ./guio4 dir camp(1..8)"
+	exit 1
+elif [ ! -d $1 ]
+then
+	echo "El primer argument ha de ser un directori"
+	exit 2
+elif [ $2 -lt 1 ] || [ $2 -gt 8 ]
+then
+	echo "El segon argument ha d'estar entre 1 i 8"
+	exit 3
+else
+	./guio3 $1 $2
+	echo "Total: $? arxius"
+	exit 0
+fi

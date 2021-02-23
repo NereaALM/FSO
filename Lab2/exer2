@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Exercici 2 . Feu un script anomenat “exer2” que, a partir de
+# dos números d’entrada, mostri per pantalla el quocient de la
+# seva divisió (primer argument / segon argument) i que el
+# codi de retorn sigui la resta de la divisió. Per exemple:
+
+# ! ./exer2 19 5
+# 19 / 5 = 3
+# echo $?
+# 4
+
+let quocient=$1/$2
+let residu=$1%$2
+ 
+echo "$quocient"
+
+exit $residu

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Guio6: imprimeix tots els directoris del PATH
+#	(opcionalment busca un arxiu executable)
+
+IFS=$':'
+for dir in $PATH
+do
+	echo -n $dir
+	if [ -x $dir/$1 ]
+	then echo -e "/\t$1"
+	else echo "/"
+	fi
+done

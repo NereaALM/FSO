@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Exercici 3 . Feu un script anomenat “exer3” que, donada una
+# llista de números introduïda com argument, retorni els valors
+# mínim, mig i màxim de tots aquests números. Si no s’introdueixen
+# almenys dos números, cal mostrar un missatge d’error. 
+
+# Per exemple:
+
+# ! ./exer3 19 5 23 -4 56 -12 37
+# min = -12
+# mig = 17
+# max = 56
+
+# ./exer3 19
+# Error ./exer3: cal adjuntar almenys dos numeros
+
+if [ $# -lt 2 ]
+then
+	echo "Error ./exer3: cal adjuntar almenys dos numeros"
+	exit 1
+else
+	
+	# Versió 1
+	max=0
+	min=99999
+	
+	for param in "$@"
+	do
+		if [ $param -gt $max ]
+		then max=$param
+		fi
+		
+		if [ $param -lt $min ]
+		then min=$param
+		fi
+	done
+	
+	echo -e "Màxim: $max\tMínim: $min"
+	
+	# Versió 2
+	echo "$@" | tr " " "\n" | sort -g | head
+	
+fi
