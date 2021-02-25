@@ -20,25 +20,38 @@ then
 	echo "Error ./exer3: cal adjuntar almenys dos numeros"
 	exit 1
 else
+	# Versió 2: ordenar numericament i quedarse l'inici, el fi i el mig
 	
-	# Versió 1
-	max=0
-	min=99999
+	# Ordenar numeros ascendentment
+	echo "$@" | tr " " "\n" | sort -g > fitxerAux
 	
-	for param in "$@"
-	do
-		if [ $param -gt $max ]
-		then max=$param
-		fi
-		
-		if [ $param -lt $min ]
-		then min=$param
-		fi
-	done
+	# Mínim
+	echo -e "Mínim:\t$(cat fitxerAux | head -1 fitxerAux)"
 	
-	echo -e "Màxim: $max\tMínim: $min"
+	# Mig
+	let mig=$#/2+1
+	echo -e "Mig:\t$(cat fitxerAux | head -"$mig" fitxerAux | tail -1)"
 	
-	# Versió 2
-	echo "$@" | tr " " "\n" | sort -g | head
+	# Màxim
+	echo -e "Màxim:\t$(cat fitxerAux | tail -1)"
 	
+	rm fitxerAux
 fi
+
+
+# Versió 1: Trobar màxim i mínim amb bucles
+#	max=0
+#	min=99999
+#	
+#	for param in "$@"
+#	do
+#		if [ $param -gt $max ]
+#		then max=$param
+#		fi
+#		
+#		if [ $param -lt $min ]
+#		then min=$param
+#		fi
+#	done
+#	
+#	echo -e "Màxim: $max\tMínim: $min"
