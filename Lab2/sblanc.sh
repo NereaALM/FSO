@@ -4,4 +4,8 @@
 # un ‘_’ en els noms dels fitxers continguts dins d’un
 # directori (./sblanc dir)
 
-
+for file in $(ls "$1")
+do
+	echo $file
+	cat "$file" | tr ' ' '_'
+done
