@@ -4,30 +4,19 @@
 # ‘.tem’, calculi la temperatura mínima, mitja i màxima
 # de tot l’any (./mmm poblacio.tem)
 
-# TO DO
-# Agafar columna de minim endreçarla buscar primera pos
-# Agafar columna de mig endreçarla i agafar mig pos
-# Agafar columna de max endreçar i agafar ultim pos
+# Format del fitxer.tem:
+# 1999	min	mig	max
+# feb	2.6	11.1	21.8
+# mar	5.6	13.1	21.4
+# abr	6.0	15.0	23.3
 
-# Ordenar numeros ascendentment
+# Mínim:
+echo -e "Mínim:\t$(sort -k2 -n "$1" | head -2 | tail -1 |  cut -f2 -d"	")"
 
-cat $1 | 
+# Mig:
+nlines=$(wc -l "$1" | cut -d' ' -f1)
+let mig=nlines/2+1
+echo -e "Mig:\t$(sort -k3 -n "$1" | head -"$mig" | tail -1 |  cut -f3 -d"	")"
 
-echo "$@" | tr " " "\n" | sort -g > fitxerAux
-	
-# Mínim
-echo -e "Mínim:\t$(cat fitxerAux | head -1 fitxerAux)"
-
-# Mig
-let mig=$#/2+1
-echo -e "Mig:\t$(cat fitxerAux | head -"$mig" fitxerAux | tail -1)"
-
-# Màxim
-echo -e "Màxim:\t$(cat fitxerAux | tail -1)"
-
-rm fitxerAux
-
-
-
-sort -k4 -n "nomFitxer" | tail -1 | cut -d'	' -f4
-cat fa | cut -d' ' -f9 >fb 
+# Màxim:
+echo -e "Màxim:\t$(sort -k4 -n "$1" | tail -1 |  cut -f4 -d"	")"
