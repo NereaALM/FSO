@@ -19,15 +19,15 @@
 case $# in
 	0)
 		lmin_name=4
-		d_pass=300
+		dmax_pass=300
 	;;
 	1)
 		lmin_name=$1
-		d_pass=300
+		dmax_pass=300
 	;;
 	2)
 		lmin_name=$1
-		d_pass=$2
+		dmax_pass=$2
 	;;
 	*)
 		echo -e "\e[31mError: número de paràmetres incorrecte\e[0m"
@@ -59,49 +59,23 @@ if [ "$EUID" -ne 0 ]
 then
 	echo -e "\e[31mError: cal ser root per veure aquesta informació\e[0m"
 else
-	str=$(cat /etc/shadow | cut -d: -f1,3)
-	echo "$str"
+	# Calcul data actual -300 dies
+	dmax_pass=$(date --date="-$dmax_pass days" +%Y%m%d)
+	
+	# Array amb usuari:data en dies desde 1970
+	ud_pass_array=($(cat /etc/shadow | cut -d: -f1,3))
+	
+	for ud_pass in "${ud_pass_array[@]}"
+	do
+		# data en segons desde 1970		
+		let d_pass=$(echo $ud_pass | cut -d: -f2)*24*60*60
+		# data última modificació contrasenya
+		d_pass=$(date -d"@$d_pass" +%Y%m%d)
+		
+		if [ $d_pass -lt $dmax_pass ]
+		then
+			echo $ud_pass | cut -d: -f1
+		fi
+	done	
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
