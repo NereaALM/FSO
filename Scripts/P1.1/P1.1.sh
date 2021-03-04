@@ -79,3 +79,35 @@ else
 	done	
 fi
 
+
+echo -e "\n4. Fitxers executables per altres:"
+
+ls -l -R $HOME > aux_file.txt
+
+echo ${file_path[3]}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

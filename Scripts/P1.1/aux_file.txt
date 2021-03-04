@@ -1,0 +1,239 @@
+/home/nalm:
+total 40
+drwxr-xr-x 2 nalm nalm 4096 oct 12  2019 Desktop
+drwxr-xr-x 2 nalm nalm 4096 mar 13  2020 Documents
+drwxr-xr-x 2 nalm nalm 4096 mar  1 16:51 Downloads
+drwxr-xr-x 2 nalm nalm 4096 mar 30  2019 Music
+drwxr-xr-x 2 nalm nalm 4096 feb 24 16:44 Pictures
+drwxr-xr-x 2 nalm nalm 4096 mar 30  2019 Public
+drwxr-xr-x 7 nalm nalm 4096 jun  9  2019 snap
+drwxr-xr-x 2 nalm nalm 4096 mar 30  2019 Templates
+drwxr-xr-x 2 nalm nalm 4096 mar 30  2019 Videos
+drwxr-xr-x 3 nalm nalm 4096 mar  1 21:21 Workspace
+
+/home/nalm/Desktop:
+total 0
+
+/home/nalm/Documents:
+total 0
+
+/home/nalm/Downloads:
+total 0
+
+/home/nalm/Music:
+total 0
+
+/home/nalm/Pictures:
+total 3996
+-rw-rw-r-- 1 nalm nalm 1607284 feb 21  2020 kimiNoNawa.jpg
+-rw-rw-r-- 1 nalm nalm  410881 feb 24 16:40 lake-1802337_1920.jpg
+-rw-rw-r-- 1 nalm nalm 1231187 feb 21  2020 NamelessKnight.jpg
+-rw-rw-r-- 1 nalm nalm  706339 feb 24 16:41 nature-3194001_1920.jpg
+-rw-rw-r-- 1 nalm nalm  125189 feb 24 16:43 water-lily-1592771_1920.jpg
+
+/home/nalm/Public:
+total 0
+
+/home/nalm/snap:
+total 20
+drwxr-xr-x 5 nalm nalm 4096 mar  4 10:08 chromium
+drwxr-xr-x 5 nalm nalm 4096 feb 18 23:17 discord
+drwxr-xr-x 5 nalm nalm 4096 feb 18 23:30 eclipse
+drwxr-xr-x 2 nalm nalm 4096 feb 17 11:36 gnome-calculator
+drwxr-xr-x 5 nalm nalm 4096 feb 24 16:37 gnome-system-monitor
+
+/home/nalm/snap/chromium:
+total 12
+drwxr-xr-x 5 nalm nalm 4096 jun  1  2019 1497
+drwxr-xr-x 5 nalm nalm 4096 jun  1  2019 1506
+drwxr-xr-x 3 nalm nalm 4096 abr  6  2019 common
+lrwxrwxrwx 1 nalm nalm    3 jun  1  2019 current -> 733
+
+/home/nalm/snap/chromium/1497:
+total 0
+
+/home/nalm/snap/chromium/1506:
+total 0
+
+/home/nalm/snap/chromium/common:
+total 0
+
+/home/nalm/snap/discord:
+total 12
+drwxr-xr-x 5 nalm nalm 4096 abr  7  2019 121
+drwxr-xr-x 5 nalm nalm 4096 abr  7  2019 93
+drwxr-xr-x 3 nalm nalm 4096 abr  7  2019 common
+lrwxrwxrwx 1 nalm nalm    2 abr  7  2019 current -> 93
+
+/home/nalm/snap/discord/121:
+total 0
+
+/home/nalm/snap/discord/93:
+total 0
+
+/home/nalm/snap/discord/common:
+total 0
+
+/home/nalm/snap/eclipse:
+total 12
+drwxr-xr-x 2 nalm nalm 4096 abr  9  2019 40
+drwxr-xr-x 2 nalm nalm 4096 abr  9  2019 48
+drwxr-xr-x 2 nalm nalm 4096 abr  9  2019 common
+lrwxrwxrwx 1 nalm nalm    2 jun  6  2019 current -> 40
+
+/home/nalm/snap/eclipse/40:
+total 0
+
+/home/nalm/snap/eclipse/48:
+total 0
+
+/home/nalm/snap/eclipse/common:
+total 0
+
+/home/nalm/snap/gnome-calculator:
+total 0
+lrwxrwxrwx 1 nalm nalm 3 may 25  2019 current -> 406
+
+/home/nalm/snap/gnome-system-monitor:
+total 12
+drwxr-xr-x 2 nalm nalm 4096 jun  9  2019 135
+drwxr-xr-x 2 nalm nalm 4096 jun  9  2019 157
+drwxr-xr-x 3 nalm nalm 4096 jun  9  2019 common
+lrwxrwxrwx 1 nalm nalm    2 jun  9  2019 current -> 83
+
+/home/nalm/snap/gnome-system-monitor/135:
+total 0
+
+/home/nalm/snap/gnome-system-monitor/157:
+total 0
+
+/home/nalm/snap/gnome-system-monitor/common:
+total 0
+
+/home/nalm/Templates:
+total 0
+
+/home/nalm/Videos:
+total 0
+
+/home/nalm/Workspace:
+total 4
+drwxrwxr-x 6 nalm nalm 4096 mar  1 21:21 FSO
+
+/home/nalm/Workspace/FSO:
+total 5364
+drwxrwxr-x 3 nalm nalm    4096 feb 26 18:52 Lab1
+drwxrwxr-x 2 nalm nalm    4096 mar  2 12:02 Lab2
+-rw-rw-r-- 1 nalm nalm 5477883 feb 22 11:33 Operating System Concepts (9th Ed) - Gagne, Silberschatz, and Galvin.pdf
+drwxrwxr-x 4 nalm nalm    4096 mar  1 21:21 Scripts
+
+/home/nalm/Workspace/FSO/Lab1:
+total 2324
+-rw-rw-r-- 1 nalm nalm 2295831 feb 17 11:00 ComandesScriptsUNIX.pdf
+-rwxrw-r-- 1 nalm nalm     404 feb 19 17:18 dadesCiutat.sh
+drwxrwxr-x 9 nalm nalm    4096 feb 18 20:04 DadesTemperatura
+-rwxrw-r-- 1 nalm nalm      51 feb 17 12:24 exer1
+-rw-rw-r-- 1 nalm nalm       3 feb 17 12:31 guio1
+-rwxrw-r-- 1 nalm nalm     180 feb 17 12:39 guio2
+-rwxrw-r-- 1 nalm nalm     107 feb 18 19:33 horaActual.sh
+-rwxrw-r-- 1 nalm nalm     333 feb 25 11:06 llistaActual.sh
+-rw-rw-r-- 1 nalm nalm    1046 feb 19 18:41 Lopez_Nerea_Lab1.tgz
+-rwxrw-r-- 1 nalm nalm     348 feb 19 18:35 maxTemp.sh
+-rwxrw-r-- 1 nalm nalm     355 feb 19 18:36 tempMaxDir.sh
+-rw-rw-r-- 1 nalm nalm   13069 feb 17 11:01 UNIXcommandsreferencecard.pdf
+-rwxrw-r-- 1 nalm nalm     145 feb 18 19:31 usuarisConnectats.sh
+-rw-rw-r-- 1 nalm nalm   17977 feb 17 11:01 vi.pdf
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura:
+total 28
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 1998
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 1999
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 2000
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 2001
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 2002
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 2003
+drwxrwxr-x 2 nalm nalm 4096 feb 18 19:16 2004
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/1998:
+total 12
+-r--r--r-- 1 nalm nalm  72 sep 14  2004 Cervia de les Garrigues.tem
+-r--r--r-- 1 nalm nalm 236 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 237 sep 14  2004 L'Arbos.tem
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/1999:
+total 16
+-r--r--r-- 1 nalm nalm 221 sep 14  2004 Barcelona.tem
+-r--r--r-- 1 nalm nalm  90 sep 14  2004 Cervia de les Garrigues.tem
+-r--r--r-- 1 nalm nalm 239 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 237 sep 14  2004 L'Arbos.tem
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/2000:
+total 20
+-r--r--r-- 1 nalm nalm 215 sep 14  2004 Baga.tem
+-r--r--r-- 1 nalm nalm 238 sep 14  2004 Barcelona.tem
+-r--r--r-- 1 nalm nalm  90 sep 14  2004 Cervia de les Garrigues.tem
+-r--r--r-- 1 nalm nalm 238 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 236 sep 14  2004 L'Arbos.tem
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/2001:
+total 20
+-r--r--r-- 1 nalm nalm 235 sep 14  2004 Baga.tem
+-r--r--r-- 1 nalm nalm 237 sep 14  2004 Barcelona.tem
+-r--r--r-- 1 nalm nalm  90 sep 14  2004 Cervia de les Garrigues.tem
+-r--r--r-- 1 nalm nalm 240 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 237 sep 14  2004 L'Arbos.tem
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/2002:
+total 24
+-r--r--r-- 1 nalm nalm 234 sep 14  2004 Baga.tem
+-r--r--r-- 1 nalm nalm 238 sep 14  2004 Barcelona.tem
+-r--r--r-- 1 nalm nalm  52 sep 14  2004 Canyelles.tem
+-r--r--r-- 1 nalm nalm  35 sep 14  2004 Cervia de les Garrigues.tem
+-r--r--r-- 1 nalm nalm 219 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 233 sep 14  2004 L'Arbos.tem
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/2003:
+total 20
+-r--r--r-- 1 nalm nalm 234 sep 14  2004 Baga.tem
+-r--r--r-- 1 nalm nalm 237 sep 14  2004 Barcelona.tem
+-r--r--r-- 1 nalm nalm 238 sep 14  2004 Canyelles.tem
+-r--r--r-- 1 nalm nalm 217 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 238 sep 14  2004 L'Arbos.tem
+
+/home/nalm/Workspace/FSO/Lab1/DadesTemperatura/2004:
+total 24
+-r--r--r-- 1 nalm nalm 162 sep 14  2004 Baga.tem
+-r--r--r-- 1 nalm nalm 164 sep 14  2004 Barcelona.tem
+-r--r--r-- 1 nalm nalm 164 sep 14  2004 Canyelles.tem
+-r--r--r-- 1 nalm nalm 125 sep 14  2004 L'Ametlla de Mar.tem
+-r--r--r-- 1 nalm nalm 163 sep 14  2004 L'Arbos.tem
+-r--r--r-- 1 nalm nalm 127 sep 14  2004 Sant Feliu de Guixols.tem
+
+/home/nalm/Workspace/FSO/Lab2:
+total 2648
+-rwxrw-r-- 1 nalm nalm     382 feb 23 16:26 exer2
+-rwxrw-r-- 1 nalm nalm    1161 feb 25 09:52 exer3
+-rwxrw-r-- 1 nalm nalm     270 feb 23 16:13 guio3
+-rwxrw-r-- 1 nalm nalm     404 feb 23 16:30 guio4
+-rwxrw-r-- 1 nalm nalm     203 feb 23 16:31 guio5
+-rwxrw-r-- 1 nalm nalm     213 feb 23 16:34 guio6
+-rw-rw-r-- 1 nalm nalm    1082 feb 26 20:17 Lab2_Lopez_Nerea.tgz
+-rwxrwxr-x 1 nalm nalm     576 feb 26 18:03 mmm.sh
+-rwxrw-r-- 1 nalm nalm     116 feb 25 10:49 nlin.sh
+-rwxrwxr-x 1 nalm nalm     277 feb 26 17:14 sblanc.sh
+-rw-rw-r-- 1 nalm nalm 2664541 feb 23 16:04 ScriptsSistemaUNIX.pdf
+-rwxrw-r-- 1 nalm nalm     842 feb 26 20:15 sinc.sh
+
+/home/nalm/Workspace/FSO/Scripts:
+total 8
+drwxrwxr-x 2 nalm nalm 4096 mar  4 12:19 P1.1
+drwxrwxr-x 2 nalm nalm 4096 mar  1 18:25 P1.2
+
+/home/nalm/Workspace/FSO/Scripts/P1.1:
+total 64
+-rw-rw-r-- 1 nalm nalm  4096 mar  4 12:19 aux_file.txt
+-rw-rw-r-- 1 nalm nalm 53719 mar  1 16:50 Enunciat_P1-1.pdf
+-rwxrw-r-- 1 nalm nalm  1929 mar  4 12:19 P1.1.sh
+
+/home/nalm/Workspace/FSO/Scripts/P1.2:
+total 0
