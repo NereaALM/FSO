@@ -21,13 +21,33 @@ case $# in
 		lmin_name=4
 		dmax_pass=300
 	;;
-	1)
-		lmin_name=$1
-		dmax_pass=300
-	;;
 	2)
-		lmin_name=$1
-		dmax_pass=$2
+		if [ $1 = "-n" ]
+		then
+			lmin_name=$2
+			dmax_pass=300
+		elif [ $1 = "-p" ]
+		then
+			lmin_name=4
+			dmax_pass=$2
+		else
+			echo -e "\e[31mError: paràmetre incorrecte.\nEscriu -n pel mínim de caracters del nom i -p pel màxim de dies sense canvis a la contrasenya\e[0m"
+			exit 1
+		fi
+	;;
+	4)
+		if [ $1 = "-n" ] && [ $3 = "-p" ]
+		then
+			lmin_name=$2
+			dmax_pass=$4
+		elif [ $1 = "-p" ] && [ $3 = "-n" ]
+		then
+			lmin_name=$4
+			dmax_pass=$2
+		else
+			echo -e "\e[31mError: paràmetre incorrecte.\nEscriu -n pel mínim de caracters del nom i -p pel màxim de dies sense canvis a la contrasenya\e[0m"
+			exit 1
+		fi
 	;;
 	*)
 		echo -e "\e[31mError: número de paràmetres incorrecte\e[0m"
@@ -79,23 +99,28 @@ else
 	done	
 fi
 
+ls -l -R $HOME > ls_aux
 
 echo -e "\n4. Fitxers executables per altres:"
 
-ls -l -R $HOME > aux_file.txt
 
-echo ${file_path[3]}
-
+cat ls_aux | grep -e '^-[r-][w-][x-][r-][w-][x-][r-][w-][x]' | tr -s ' ' | cut -d' ' -f9
 
 
+echo -e "\n5. Fitxers amb el bit SETUID activat:"
+cat ls_aux | grep -e '^-[r-][w-][s][r-][w-][x-][r-][w-][x-]' | tr -s ' ' | cut -d' ' -f9
 
+echo -e "\n6. Fitxers d'arxivat que contenen fitxers amb bit X activat:"
 
+compressed_files=$(cat ls_aux | grep -e '^-' | tr -s ' ' | cut -d' ' -f9 | grep -e '[*]*.tar' -e '[*]*.tgz')
 
+for cfile in $compressed_files
+do
+	path=$(find $HOME -name "$cfile" -print | cut -d'\n' )
+	echo $path
+done
 
-
-
-
-
+rm ls_aux
 
 
 
