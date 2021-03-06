@@ -110,16 +110,30 @@ cat ls_aux | grep -e '^-[r-][w-][x-][r-][w-][x-][r-][w-][x]' | tr -s ' ' | cut -
 echo -e "\n5. Fitxers amb el bit SETUID activat:"
 cat ls_aux | grep -e '^-[r-][w-][s][r-][w-][x-][r-][w-][x-]' | tr -s ' ' | cut -d' ' -f9
 
+
 echo -e "\n6. Fitxers d'arxivat que contenen fitxers amb bit X activat:"
 
 compressed_files=$(cat ls_aux | grep -e '^-' | tr -s ' ' | cut -d' ' -f9 | grep -e '[*]*.tar' -e '[*]*.tgz')
 
+mkdir dir_comp_files
+
 for cfile in $compressed_files
 do
-	path=$(find $HOME -name "$cfile" -print | cut -d'\n' )
-	echo $path
+	path=$(find $HOME -name "$cfile" -print 2>/dev/null)
+	tar xzvf "$path" -C ./dir_comp_files >/dev/null
+	
+	for file in $(ls ./dir_comp_files)
+	do
+		if [ -x $file ]
+		then
+			echo $cfile
+		fi
+	done
+	
+	rm -rf dir_comp_files/*
 done
 
+rm -r dir_comp_files
 rm ls_aux
 
 
