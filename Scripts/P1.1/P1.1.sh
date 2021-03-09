@@ -57,7 +57,6 @@ esac
 
 
 echo "1. Usuaris amb nom massa curt:"
-
 user_array=($(cut -d: -f1 /etc/passwd))
 
 for uname in "${user_array[@]}"
@@ -74,7 +73,6 @@ echo -e "$(grep '^sudo:.*$' /etc/group | cut -d: -f4)"
 
 
 echo -e "\n3. Usuaris amb contrasenya massa antiga:"
-
 if [ "$EUID" -ne 0 ]
 then
 	echo -e "\e[31mError: cal ser root per veure aquesta informació\e[0m"
@@ -99,54 +97,45 @@ else
 	done	
 fi
 
+
 ls -l -R $HOME > ls_aux
 
 echo -e "\n4. Fitxers executables per altres:"
-
-
 cat ls_aux | grep -e '^-[r-][w-][x-][r-][w-][x-][r-][w-][x]' | tr -s ' ' | cut -d' ' -f9
 
 
 echo -e "\n5. Fitxers amb el bit SETUID activat:"
 cat ls_aux | grep -e '^-[r-][w-][s][r-][w-][x-][r-][w-][x-]' | tr -s ' ' | cut -d' ' -f9
 
-
-echo -e "\n6. Fitxers d'arxivat que contenen fitxers amb bit X activat:"
-
-compressed_files=$(cat ls_aux | grep -e '^-' | tr -s ' ' | cut -d' ' -f9 | grep -e '[*]*.tar' -e '[*]*.tgz')
-
-mkdir dir_comp_files
-
-for cfile in $compressed_files
-do
-	path=$(find $HOME -name "$cfile" -print 2>/dev/null)
-	tar xzvf "$path" -C ./dir_comp_files >/dev/null
-	
-	for file in $(ls ./dir_comp_files)
-	do
-		if [ -x $file ]
-		then
-			echo $cfile
-		fi
-	done
-	
-	rm -rf dir_comp_files/*
-done
-
-rm -r dir_comp_files
 rm ls_aux
 
 
+echo -e "\n6. Fitxers d'arxivat que contenen fitxers amb bit X activat:"
 
+# compressed_files conté els noms dels fitxers .tar o .tgz
+tar_names=$(ls -R $HOME | grep -e '[*]*.tar' -e '[*]*.tgz')
 
+mkdir dir_tar_files
 
+for cfile in $tar_names
+do
+	path=$(find $HOME -name "$cfile" -print 2>/dev/null)
+	
+	tar xzvf "$path" -C ./dir_tar_files >/dev/null
+	
+	is_printed_cfile=0
+	for file in $(ls ./dir_tar_files)
+	do
+		# Si el fitxer es executable i no s'ha imprès a pantalla, imprimim cfile(pare comprimit)
+		if [ -x "$file" ] && [ $is_printed_cfile -eq 0 ]
+		then
+			echo $cfile
+			is_printed_cfile=1
+		fi
+	done
+	
+	rm -rf dir_tar_files/*
+done
 
-
-
-
-
-
-
-
-
+rm -r dir_tar_files
 
