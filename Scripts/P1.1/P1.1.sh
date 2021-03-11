@@ -111,31 +111,32 @@ rm ls_aux
 
 
 echo -e "\n6. Fitxers d'arxivat que contenen fitxers amb bit X activat:"
-
 # compressed_files conté els noms dels fitxers .tar o .tgz
 tar_names=$(ls -R $HOME | grep -e '[*]*.tar' -e '[*]*.tgz')
-
-mkdir dir_tar_files
 
 for cfile in $tar_names
 do
 	path=$(find $HOME -name "$cfile" -print 2>/dev/null)
 	
-	tar xzvf "$path" -C ./dir_tar_files >/dev/null
+	tar -tzvf $path > tar_content
 	
 	is_printed_cfile=0
-	for file in $(ls ./dir_tar_files)
+	while IFS= read -r line && [[ $is_printed_cfile -eq 0 ]]
 	do
 		# Si el fitxer es executable i no s'ha imprès a pantalla, imprimim cfile(pare comprimit)
-		if [ -x "$file" ] && [ $is_printed_cfile -eq 0 ]
+		if [[ "$(echo "$line" | cut -d' ' -f1)" == *x* ]] && [ $is_printed_cfile -eq 0 ]
 		then
 			echo $cfile
 			is_printed_cfile=1
 		fi
-	done
+	done < tar_content
 	
-	rm -rf dir_tar_files/*
 done
 
-rm -r dir_tar_files
+if [ -f tar_content ] 
+then
+	rm tar_content
+fi
+
+
 
