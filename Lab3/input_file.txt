@@ -1,0 +1,4 @@
+total 340
+-rw-rw-r-- 1 nalm nalm      0 mar 13 11:48 input_file.txt
+-rw-rw-r-- 1 nalm nalm 340431 mar 13 11:16 InterpretPython_2019.pdf
+-rwxrw-r-- 1 nalm nalm    679 mar 13 11:47 script1_python.py
