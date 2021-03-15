@@ -71,9 +71,21 @@ def noms_curtsPy():
     global lboxP
     global quefaig
     quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters en python")
-    
+ 	
+ 	# Lectura de paràmetres
     mida = simpledialog.askinteger('Mida minima','Quina mida mínima de nom vols?')
     quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caràcters   ")
+    
+    # Lectura de fitxer /etc/passwd
+    passwd_file = open('/etc/passwd', 'r')
+    flines_list = passwd_file.readlines()
+    passwd_file.close()
+    
+    # Evaluació de longituds de noms
+    for line in flines_list:
+    	name = line.split(':')[0]
+    	if len(name) < mida:
+    		lboxP.insert(END, name)
 
 def noms_curtsSh():
     global lboxS
