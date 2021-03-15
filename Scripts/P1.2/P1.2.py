@@ -23,6 +23,7 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 
 # imports auxilliars/secundaris
 import gzip				 # per si el tar esta comprimit 
+from datetime import date
 
 #___________________________________________FUNCIONS____________________________________________
 
@@ -146,7 +147,29 @@ def massa_tempsPy():
 	global quefaig
 	quefaig.set("Buscant quins usuaris fa massa temps que van canviar la seva contrasenya ")
 	
+	# TO DO
+	# calcul data actual -300 dies
+	# llegir etc/shadow i quedarse usuari i data
+	# imprimir noms que tenen data caduca
 	
+	# Control d'execució com a sudo
+	if os.geteuid() != 0:
+		messagebox.showinfo(message="S'ha d'executar com a sudo per fer aquesta funció", title="Avis")
+	else:
+		# Lectura de fitxer /etc/shadow
+		shadow_file = open('/etc/shadow', 'r')
+		flines_list = shadow_file.readlines()
+		shadow_file.close()
+		
+		# Data actual
+		current_date = date.today()
+		
+		# Impressió de usuaris amb contrasenya antiga
+		for line in flines_list:
+			aux_date = line.split(':')[3]
+			
+			if aux_date < current_date
+			
 	
 def massa_tempsSh():
 	global lboxS
