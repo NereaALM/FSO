@@ -57,8 +57,10 @@ esac
 
 
 echo "1. Usuaris amb nom massa curt:"
+# Lectura de fitxer /etc/passwd
 user_array=($(cut -d: -f1 /etc/passwd))
 
+ # Evaluació de longituds de noms
 for uname in "${user_array[@]}"
 do
 	if [ ${#uname} -lt $lmin_name ]
