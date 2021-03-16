@@ -24,6 +24,8 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 # imports auxilliars/secundaris
 import gzip				 # per si el tar esta comprimit 
 from datetime import date
+from datetime import timedelta
+import stat
 
 #___________________________________________FUNCIONS____________________________________________
 
@@ -147,29 +149,41 @@ def massa_tempsPy():
 	global quefaig
 	quefaig.set("Buscant quins usuaris fa massa temps que van canviar la seva contrasenya ")
 	
-	# TO DO
-	# calcul data actual -300 dies
-	# llegir etc/shadow i quedarse usuari i data
-	# imprimir noms que tenen data caduca
-	
 	# Control d'execució com a sudo
 	if os.geteuid() != 0:
 		messagebox.showinfo(message="S'ha d'executar com a sudo per fer aquesta funció", title="Avis")
 	else:
+		# Lectura de dies sense canvis a contrasenya
+		is_def_lim = messagebox.askyesno("Limit de temps",
+		"Vols definir el limit de temps sense canviar la contrasenya o deixar el temps per defecte (300 dies)?")
+		
+		if is_def_lim:
+			dmax_pass = simpledialog.askinteger('Limit de temps','Quin limit de temps sense canviar la contrasenya vols?')
+		else:
+			dmax_pass = 300
+	
+		quefaig.set("Buscant quins usuaris fa més de " + str(dmax_pass) + " dies que van canviar la seva contrasenya")
+		
+		# Data límit en format Y-M-D
+		limit_date = date.today()
+		limit_date = limit_date - timedelta(days = dmax_pass)
+		# Data inici Unix en format Y-M-D
+		unix_ini_date = date(1970, 1, 1)
+		
 		# Lectura de fitxer /etc/shadow
 		shadow_file = open('/etc/shadow', 'r')
 		flines_list = shadow_file.readlines()
 		shadow_file.close()
 		
-		# Data actual
-		current_date = date.today()
-		
 		# Impressió de usuaris amb contrasenya antiga
 		for line in flines_list:
-			aux_date = line.split(':')[3]
+			# Num de dies des del 1970 fins l'ultim canvi de password
+			aux_date = line.split(':')[2]
+			# Data de ultim canvi
+			aux_date = unix_ini_date + timedelta(days = int(aux_date))
 			
-			if aux_date < current_date
-			
+			if aux_date < limit_date:
+				lboxP.insert(END, line.split(':')[0])
 	
 def massa_tempsSh():
 	global lboxS
@@ -187,18 +201,30 @@ def exec_others():
 def exec_othersPy():
 	global lboxP
 	global quefaig
-	quefaig.set("Buscant quins ftxers tenen el permís d’execució per a els altres usuaris (others) ")
+	quefaig.set("Buscant quins fitxers tenen el permís d’execució per a els altres usuaris (others) ")
+	
+	home_dir = os.path.expanduser("~")
+	
+	for current_dir, dir_list, file_list in os.walk(home_dir):
+		for file in file_list:
+		
+			file_path = os.path.join(current_dir, file)
+			if os.path.isfile(file_path):
+			
+				perms = os.stat(file_path)
+				if perms.st_mode & stat.S_IXOTH:
+					lboxP.insert(END, file)
 	
 def exec_othersSh():
 	global lboxS
 	global quefaig
-	quefaig.set("Buscant quins ftxers tenen el permís d’execució per a els altres usuaris (others) ")
+	quefaig.set("Buscant quins fitxers tenen el permís d’execució per a els altres usuaris (others) ")
 
 # 5. quins ftxers tenen el bit SETUID activat
 def setuid_actiu():
 	global lboxP, lboxS
 	global quefaig
-	quefaig.set("Buscant quins ftxers tenen el bit SETUID activat")
+	quefaig.set("Buscant quins fitxers tenen el bit SETUID activat")
 	setuid_actiuPy()
 	setuid_actiuSh()
 	
@@ -206,6 +232,18 @@ def setuid_actiuPy():
 	global lboxP
 	global quefaig
 	quefaig.set("Buscant quins ftxers tenen el bit SETUID activat")
+	
+	home_dir = os.path.expanduser("~")
+	
+	for current_dir, dir_list, file_list in os.walk(home_dir):
+		for file in file_list:
+			
+			file_path = os.path.join(current_dir, file)
+			if os.path.isfile(file_path):
+			
+				perms = os.stat(file_path)
+				if perms.st_mode & stat.S_ISUID:
+					lboxP.insert(END, file)
 	
 def setuid_actiuSh():
 	global lboxS
