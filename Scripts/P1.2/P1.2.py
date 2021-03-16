@@ -26,6 +26,7 @@ import gzip				 # per si el tar esta comprimit
 from datetime import date
 from datetime import timedelta
 import stat
+import tarfile
 
 #___________________________________________FUNCIONS____________________________________________
 
@@ -262,6 +263,23 @@ def permis_exec_a_tarPy():
 	global lboxP
 	global quefaig
 	quefaig.set("Buscant quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat")
+	
+	home_dir = os.path.expanduser("~")
+	
+	for current_dir, dir_list, file_list in os.walk(home_dir):
+		for file in file_list:
+			if file.endswith('.tar') or file.endswith('.tgz'):
+				
+				file_path = os.path.join(current_dir, file)
+				if os.path.isfile(file_path):
+					
+					with tarfile.open(file_path, 'r') as tar:
+						
+						file_printed = False
+						for member in tar.getmembers():
+							if not file_printed and (member.mode & stat.S_IXUSR or member.mode & stat.S_IXGRP or member.mode & stat.S_IXOTH):
+								lboxP.insert(END, file)
+								file_printed = True
 
 def permis_exec_a_tarSh():
 	global lboxS
