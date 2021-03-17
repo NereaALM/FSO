@@ -24,6 +24,7 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 # imports auxilliars/secundaris
 import gzip				 # per si el tar esta comprimit 
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 import stat
 import tarfile
@@ -226,11 +227,11 @@ def massa_tempsPy(dies = -1):
 		# Impressió de usuaris amb contrasenya antiga
 		for line in flines_list:
 			# Num de dies des del 1970 fins l'ultim canvi de password
-			aux_date = line.split(':')[2]
+			user_date = line.split(':')[2]
 			# Data de ultim canvi
-			aux_date = unix_ini_date + timedelta(days = int(aux_date))
+			user_date = unix_ini_date + timedelta(days = int(user_date))
 			
-			if aux_date < limit_date:
+			if user_date < limit_date:
 				lboxP.insert(END, line.split(':')[0])
 	
 def massa_tempsSh(dies = -1):
@@ -242,11 +243,31 @@ def massa_tempsSh(dies = -1):
 	
 	if dies >= 0:
 		
+		# Data límit en format Y-M-D
 		args = ['date', '+%Y-%m-%d']
 		date_proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-		today = (str(date_proc.communicate()[0])[2:][:-3])
+		today = str(date_proc.communicate()[0])[2:][:-3]
+		today = datetime.strptime(today, '%Y-%m-%d')
+		limit_date = today - timedelta(days = dies)
 		
-	
+		# Data inici Unix en format Y-M-D
+		unix_ini_date = datetime(1970, 1, 1)
+		
+		# Lectura de fitxer /etc/shadow
+		args = ['cat', '/etc/shadow']
+		cat = subprocess.Popen(args, stdout=subprocess.PIPE)
+		file_content = str(cat.communicate()[0])[2:][:-3].split('\\')
+		
+		# Impressió de usuaris amb contrasenya antiga
+		for line in file_content:
+			line = line.split(':')
+			user = line[0]
+			user_days = line[2]
+			user_date = unix_ini_date + timedelta(days = int(user_days))
+			
+			if user_date < limit_date:
+				lboxS.insert(END, user)
+			
 
 # 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)
 def exec_others():
@@ -277,6 +298,25 @@ def exec_othersSh():
 	global lboxS
 	global quefaig
 	quefaig.set("Buscant quins fitxers tenen el permís d’execució per a els altres usuaris (others) ")
+	
+	home_dir = os.path.expanduser("~")
+	
+	# Obtenir paths
+	args = ['ls', '-l', '-R', str(home_dir)]
+	ls = subprocess.Popen(args, stdout=subprocess.PIPE)
+	paths = str(ls.communicate()[0])[1:][:-3].split('\\')
+	
+	for path in paths:
+		path = path[1:]
+		
+		args = ['grep', '-e', "'[*]*.tar'", '-e', "'[*]*.tgz'", path]
+		grep = subprocess.Popen(args, stdout=subprocess.PIPE)
+		grep_result = grep.communicate()
+		
+		print(grep_result[1])
+		#print(grep_result[0])
+	
+	
 
 # 5. quins ftxers tenen el bit SETUID activat
 def setuid_actiu():
