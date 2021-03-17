@@ -306,16 +306,13 @@ def exec_othersSh():
 	ls = subprocess.Popen(args, stdout=subprocess.PIPE)
 	paths = str(ls.communicate()[0])[1:][:-3].split('\\')
 	
+	# Mirar si bit x de other està activat
 	for path in paths:
 		path = path[1:]
-		
-		args = ['grep', '-e', "'[*]*.tar'", '-e', "'[*]*.tgz'", path]
-		grep = subprocess.Popen(args, stdout=subprocess.PIPE)
-		grep_result = grep.communicate()
-		
-		print(grep_result[1])
-		#print(grep_result[0])
-	
+		if path.startswith("-"):
+			path = path.split(" ")
+			if path[0][9] == 'x':
+				lboxS.insert(END, path[-1])
 	
 
 # 5. quins ftxers tenen el bit SETUID activat
@@ -347,6 +344,23 @@ def setuid_actiuSh():
 	global lboxS
 	global quefaig
 	quefaig.set("Buscant quins ftxers tenen el bit SETUID activat")
+	
+	home_dir = os.path.expanduser("~")
+	
+	# Obtenir paths
+	args = ['ls', '-l', '-R', str(home_dir)]
+	ls = subprocess.Popen(args, stdout=subprocess.PIPE)
+	paths = str(ls.communicate()[0])[1:][:-3].split('\\')
+	
+	# Mirar si bit s de user està activat
+	for path in paths:
+		path = path[1:]
+		if path.startswith("-"):
+			path = path.split(" ")
+			if path[0][3] == 's':
+				print(path[-1])
+				lboxS.insert(END, path[-1])
+				
 
 # 6. quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat
 def permis_exec_a_tar():
