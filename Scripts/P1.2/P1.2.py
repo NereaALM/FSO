@@ -64,22 +64,43 @@ def llista_dirSh():
 # TO DO_______________________________________________________________________________________________
 
 # 1. quins usuaris tenen un nom massa curt
+
+# Funció auxiliar per demanar la mida en cas necessari
+def escollir_mida(mida = -1):
+	if mida == -1:		
+		escollir_mida = messagebox.askyesno('Escollir mida', 'Vols escollir la mida mínima dels noms?')
+		
+		if escollir_mida:
+			mida = simpledialog.askinteger('Mida minima','Quina mida mínima de nom vols?')
+			if not mida:
+				mida = 4
+		else:
+			mida = 4
+			
+		quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caràcters   ")
+	
+	return mida
+	
 def noms_curts():
 	global lboxP, lboxS
 	global quefaig
 	quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters ")
-	noms_curtsPy()
-	noms_curtsSh()
+	
+	# Lectura de paràmetres
+	mida = escollir_mida()
+	
+	# Crida de funcions
+	noms_curtsPy(mida)
+	noms_curtsSh(mida)
 
-def noms_curtsPy():
+def noms_curtsPy(mida = -1):
 	global lboxP
 	global quefaig
 	quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters en python")
- 	
- 	# Lectura de paràmetres
-	mida = simpledialog.askinteger('Mida minima','Quina mida mínima de nom vols?')
-	quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caràcters   ")
 	
+	# Lectura de paràmetres
+	mida = escollir_mida(mida)
+ 	
 	# Lectura de fitxer /etc/passwd
 	passwd_file = open('/etc/passwd', 'r')
 	flines_list = passwd_file.readlines()
@@ -87,24 +108,26 @@ def noms_curtsPy():
 	
 	# Evaluació de longituds de noms
 	for line in flines_list:
-		name = line.split(':')[0]
-		if len(name) < mida:
-			lboxP.insert(END, name)
+		user = line.split(':')[0]
+		if len(user) < mida:
+			lboxP.insert(END, user)
 
-def noms_curtsSh():
+def noms_curtsSh(mida = -1):
 	global lboxS
 	global quefaig
 	quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters en shell")
 	
 	# Lectura de paràmetres
-	mida = simpledialog.askinteger('Mida minima','Quina mida mínima de nom vols?')
-	quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caràcters	")
+	mida = escollir_mida(mida)
 	
-	# Lectura de fitxer /etc/passwd
-	users = subprocess.run(["cut", "-d:", "-f1", "/etc/passwd"], capture_output = True)
+	# Lectura de fitxer /etc/passwd	
+	args = ["cut", "-d:", "-f1", "/etc/passwd"]
+	cut = subprocess.Popen(args, stdout=subprocess.PIPE)
+	users = str(cut.communicate())[2:][:-10]
 	
 	# Evaluació de longituds de noms
-	for user in users:
+	for user in users.split('\\'):
+		user = user[1:]
 		if len(user) < mida:
 			lboxS.insert(END, user)
 
@@ -137,37 +160,61 @@ def sudoersSh():
 	global quefaig
 	quefaig.set("Buscant quins usuaris poden executar amb permisos elevats ")
 	
+	# echo -e "$(grep '^sudo:.*$' /etc/group | cut -d: -f4)"
+	args = ['grep', '^sudo:.*$', '/etc/group']
+	grep = subprocess.Popen(args, stdout=subprocess.PIPE)
+	output = (str(grep.communicate())[3:][:-10]).split(':')[3]
+	
+	lboxS.insert(END, output)
+	
+	
 # 3. quins usuaris fa massa temps que van canviar la seva contrasenya
+
+# Funció per controlar execució en sudo i inicialitzar els dies sense canvis
+def init_massa_temps(dies = -1):
+	
+	# Controls de permis d'execució sudo
+	if dies != -2 and os.getuid() != 0:
+		messagebox.showinfo(message="S'ha d'executar com a sudo per fer aquesta funció", title="Avis")
+		dies = -2
+	
+	# Inicialització de dies
+	elif dies == -1:
+		is_def_lim = messagebox.askyesno("Limit de temps",
+		"Vols definir el limit de temps sense canviar la contrasenya o deixar el temps per defecte (300 dies)?")
+		if is_def_lim:
+			dies = simpledialog.askinteger('Limit de temps','Quin limit de temps sense canviar la contrasenya vols?')
+			if not dies:
+				dies = 300
+		else:
+			dies = 300
+		quefaig.set("Buscant quins usuaris fa més de " + str(dies) + " dies que van canviar la seva contrasenya")
+		
+	return dies
+
 def massa_temps():
 	global lboxP, lboxS
 	global quefaig
 	quefaig.set("Buscant quins usuaris fa massa temps que van canviar la seva contrasenya ")
-	massa_tempsPy()
-	massa_tempsSh()
+	
+	dies = init_massa_temps()
+	
+	massa_tempsPy(dies)
+	massa_tempsSh(dies)
 
-def massa_tempsPy():
+def massa_tempsPy(dies = -1):
 	global lboxP
 	global quefaig
 	quefaig.set("Buscant quins usuaris fa massa temps que van canviar la seva contrasenya ")
 	
-	# Control d'execució com a sudo
-	if os.geteuid() != 0:
-		messagebox.showinfo(message="S'ha d'executar com a sudo per fer aquesta funció", title="Avis")
-	else:
-		# Lectura de dies sense canvis a contrasenya
-		is_def_lim = messagebox.askyesno("Limit de temps",
-		"Vols definir el limit de temps sense canviar la contrasenya o deixar el temps per defecte (300 dies)?")
-		
-		if is_def_lim:
-			dmax_pass = simpledialog.askinteger('Limit de temps','Quin limit de temps sense canviar la contrasenya vols?')
-		else:
-			dmax_pass = 300
+	dies = init_massa_temps(dies)
 	
-		quefaig.set("Buscant quins usuaris fa més de " + str(dmax_pass) + " dies que van canviar la seva contrasenya")
+	# Control d'execució com a sudo
+	if dies >= 0:
 		
 		# Data límit en format Y-M-D
 		limit_date = date.today()
-		limit_date = limit_date - timedelta(days = dmax_pass)
+		limit_date = limit_date - timedelta(days = dies)
 		# Data inici Unix en format Y-M-D
 		unix_ini_date = date(1970, 1, 1)
 		
@@ -186,10 +233,20 @@ def massa_tempsPy():
 			if aux_date < limit_date:
 				lboxP.insert(END, line.split(':')[0])
 	
-def massa_tempsSh():
+def massa_tempsSh(dies = -1):
 	global lboxS
 	global quefaig
 	quefaig.set("Buscant quins usuaris fa massa temps que van canviar la seva contrasenya ")
+	
+	dies = init_massa_temps(dies)
+	
+	if dies >= 0:
+		
+		args = ['date', '+%Y-%m-%d']
+		date_proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+		today = (str(date_proc.communicate()[0])[2:][:-3])
+		
+	
 
 # 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)
 def exec_others():
@@ -295,6 +352,18 @@ def netejar():
 	lboxP.delete(0,END)
 	lboxS.delete(0,END)
 
+def netejarPy():
+	global lboxP, lboxS
+	global quefaig
+	quefaig.set("netejant la informació trobada de Python")
+	lboxP.delete(0,END)
+	
+def netejarSh():
+	global lboxP, lboxS
+	global quefaig
+	quefaig.set("netejant la informació trobada de Shell")
+	lboxS.delete(0,END)
+
 def tancaGUI():
 	guiroot.quit()
 
@@ -359,7 +428,7 @@ Button (frameBotonsPy, text='massa temps', command=massa_tempsPy).pack(anchor=W,
 Button (frameBotonsPy, text='exec others', command=exec_othersPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='setuid actiu', command=setuid_actiuPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='exec a tar', command=permis_exec_a_tarPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='netejar', command=netejar).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='netejar', command=netejarPy).pack(anchor=W,side=TOP)
 
 frameEventsSh= Frame(frameEvents)
 frameBotonsSh= Frame(frameEvents)
@@ -382,7 +451,7 @@ Button (frameBotonsSh, text='massa temps', command=massa_tempsSh).pack(anchor=W,
 Button (frameBotonsSh, text='exec others', command=exec_othersSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='setuid actiu', command=setuid_actiuSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='exec a tar', command=permis_exec_a_tarSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='netejar', command=netejar).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='netejar', command=netejarSh).pack(anchor=W,side=TOP)
 
 frameSortir= Frame(guiroot)
 frameSortir.pack(side=TOP, expand=True, fill=BOTH,padx=20,pady=5)
