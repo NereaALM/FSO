@@ -113,7 +113,6 @@ rm ls_aux
 
 
 echo -e "\n6. Fitxers d'arxivat que contenen fitxers amb bit X activat:"
-# compressed_files conté els noms dels fitxers .tar o .tgz
 tar_names=$(ls -R $HOME | grep -e '[*]*.tar' -e '[*]*.tgz')
 
 for cfile in $tar_names

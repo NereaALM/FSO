@@ -161,7 +161,7 @@ def sudoersSh():
 	global quefaig
 	quefaig.set("Buscant quins usuaris poden executar amb permisos elevats ")
 	
-	# echo -e "$(grep '^sudo:.*$' /etc/group | cut -d: -f4)"
+	# grep '^sudo:.*$' /etc/group | cut -d: -f4
 	args = ['grep', '^sudo:.*$', '/etc/group']
 	grep = subprocess.Popen(args, stdout=subprocess.PIPE)
 	output = (str(grep.communicate())[3:][:-10]).split(':')[3]
@@ -284,15 +284,23 @@ def exec_othersPy():
 	
 	home_dir = os.path.expanduser("~")
 	
+	# Recorrer arbre de directoris
+	found_x = False
 	for current_dir, dir_list, file_list in os.walk(home_dir):
 		for file in file_list:
-		
+			
+			# Aconseguir path de fitxer
 			file_path = os.path.join(current_dir, file)
 			if os.path.isfile(file_path):
 			
+				# Evaluació de permisos
 				perms = os.stat(file_path)
 				if perms.st_mode & stat.S_IXOTH:
 					lboxP.insert(END, file)
+					found_x = True
+					
+	if not found_x:
+		lboxP.insert(END, "No hi ha cap resultat")
 	
 def exec_othersSh():
 	global lboxS
@@ -306,14 +314,20 @@ def exec_othersSh():
 	ls = subprocess.Popen(args, stdout=subprocess.PIPE)
 	paths = str(ls.communicate()[0])[1:][:-3].split('\\')
 	
-	# Mirar si bit x de other està activat
+	# Mirar paths de fitxers
+	found_x = False
 	for path in paths:
 		path = path[1:]
 		if path.startswith("-"):
 			path = path.split(" ")
+			
+			# Mirar si bit x de other està activat
 			if path[0][9] == 'x':
 				lboxS.insert(END, path[-1])
-	
+				found_x = True
+				
+	if not found_x:
+		lboxP.insert(END, "No hi ha cap resultat")
 
 # 5. quins ftxers tenen el bit SETUID activat
 def setuid_actiu():
@@ -330,15 +344,22 @@ def setuid_actiuPy():
 	
 	home_dir = os.path.expanduser("~")
 	
+	# Recorrer arbre de directoris
+	found_s = False
 	for current_dir, dir_list, file_list in os.walk(home_dir):
 		for file in file_list:
 			
+			# Aconseguir path de fitxer
 			file_path = os.path.join(current_dir, file)
 			if os.path.isfile(file_path):
 			
+				# Evaluació de permisos
 				perms = os.stat(file_path)
 				if perms.st_mode & stat.S_ISUID:
 					lboxP.insert(END, file)
+					found_s = True
+	if not found_s:
+		lboxP.insert(END, "No hi ha cap resultat")
 	
 def setuid_actiuSh():
 	global lboxS
@@ -352,14 +373,21 @@ def setuid_actiuSh():
 	ls = subprocess.Popen(args, stdout=subprocess.PIPE)
 	paths = str(ls.communicate()[0])[1:][:-3].split('\\')
 	
-	# Mirar si bit s de user està activat
+	# Mirar paths de fitxers
+	found_s = False
 	for path in paths:
 		path = path[1:]
 		if path.startswith("-"):
 			path = path.split(" ")
+			
+			# Mirar si bit s de user està activat
 			if path[0][3] == 's':
+				found_s = True
 				print(path[-1])
 				lboxS.insert(END, path[-1])
+	
+	if not found_s:
+		lboxS.insert(END, "No hi ha cap resultat")
 				
 
 # 6. quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat
@@ -377,16 +405,23 @@ def permis_exec_a_tarPy():
 	
 	home_dir = os.path.expanduser("~")
 	
+	# Recorrer arbre de directoris
 	for current_dir, dir_list, file_list in os.walk(home_dir):
 		for file in file_list:
+			
+			# Mirar si es tar o tgz	
 			if file.endswith('.tar') or file.endswith('.tgz'):
 				
+				# Obtenir path complert
 				file_path = os.path.join(current_dir, file)
 				if os.path.isfile(file_path):
 					
+					# Veure contingut de tar
 					with tarfile.open(file_path, 'r') as tar:
 						
 						file_printed = False
+						
+						# Cerca fitxers amb permís d'execució
 						for member in tar.getmembers():
 							if not file_printed and (member.mode & stat.S_IXUSR or member.mode & stat.S_IXGRP or member.mode & stat.S_IXOTH):
 								lboxP.insert(END, file)
@@ -397,6 +432,44 @@ def permis_exec_a_tarSh():
 	global quefaig
 	quefaig.set("Buscant quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat")
 	
+	home_dir = os.path.expanduser("~")
+	
+	# Recorrer arbre de directoris
+	args = ['ls', '-R', str(home_dir)]
+	ls = subprocess.Popen(args, stdout=subprocess.PIPE)
+	files = str(ls.communicate()[0])[1:][:-3].split('\\')
+	
+	for file in files:
+		file = file[1:]
+		
+		printed = False
+		
+		# Obtenir directori pare
+		if file.startswith('/'):
+			last_dir = file[:-1]
+			
+		# Mirar si es tar o tgz
+		if file.endswith('.tar') or file.endswith('.tgz'):
+		
+			# Obtenir path
+			path = last_dir + '/' + file
+			if os.path.isfile(path):
+				
+				# Obtenir elements que hi ha dins amb permisos
+				args = ['tar', '-tzvf', str(path)]
+				tar = subprocess.Popen(args, stdout=subprocess.PIPE)
+				elems = str(tar.communicate()[0]).split("\n'")
+				
+				for elem in elems:
+					elem = elem[2:][:-3]
+					perm = elem.split()[0]
+				
+					# Avaluo si hi ha algun fitxer amb permisos d'execució
+					if (perm[3] == 'x' or perm[6] == 'x' or perm[9] == 'x') and not printed:
+						printed = True
+						lboxS.insert(END, file)
+						
+						
 # End TO DO_______________________________________________________________________________________________
 
 def netejar():
