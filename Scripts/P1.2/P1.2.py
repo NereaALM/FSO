@@ -6,7 +6,7 @@
 # Data: 12 mar 2021
 # Versio: v2
 
-#___________________________________________IMPORTS____________________________________________
+#___________________________________________IMPORTS_____________________________________________________________________________
 
 # imports tipics/generics
 import os   # os.path, os.stat, os.remove ...
@@ -29,7 +29,7 @@ from datetime import timedelta
 import stat
 import tarfile
 
-#___________________________________________FUNCIONS____________________________________________
+#___________________________________________FUNCIONS____________________________________________________________________________
 
 def tracta_exepcio(error):
 	exception_type = type(error).__name__
@@ -62,9 +62,8 @@ def llista_dirSh():
 	for elem in out.splitlines():
 	   lboxS.insert(END,elem)
 
-# TO DO_______________________________________________________________________________________________
 
-# 1. quins usuaris tenen un nom massa curt
+# 1. quins usuaris tenen un nom massa curt______________________________________________________________________________________
 
 # Funció auxiliar per demanar la mida en cas necessari
 def escollir_mida(mida = -1):
@@ -133,7 +132,8 @@ def noms_curtsSh(mida = -1):
 			lboxS.insert(END, user)
 
 
-# 2. comprovarà quins usuaris poden executar amb permisos elevats (sudoers)
+# 2. comprovarà quins usuaris poden executar amb permisos elevats (sudoers)____________________________________________________
+
 def sudoers():
 	global lboxP, lboxS
 	global quefaig
@@ -169,7 +169,7 @@ def sudoersSh():
 	lboxS.insert(END, output)
 	
 	
-# 3. quins usuaris fa massa temps que van canviar la seva contrasenya
+# 3. quins usuaris fa massa temps que van canviar la seva contrasenya___________________________________________________________
 
 # Funció per controlar execució en sudo i inicialitzar els dies sense canvis
 def init_massa_temps(dies = -1):
@@ -269,7 +269,8 @@ def massa_tempsSh(dies = -1):
 				lboxS.insert(END, user)
 			
 
-# 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)
+# 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)________________________________________________
+
 def exec_others():
 	global lboxP, lboxS
 	global quefaig
@@ -329,7 +330,9 @@ def exec_othersSh():
 	if not found_x:
 		lboxP.insert(END, "No hi ha cap resultat")
 
-# 5. quins ftxers tenen el bit SETUID activat
+
+# 5. quins ftxers tenen el bit SETUID activat__________________________________________________________________________________
+
 def setuid_actiu():
 	global lboxP, lboxS
 	global quefaig
@@ -390,7 +393,8 @@ def setuid_actiuSh():
 		lboxS.insert(END, "No hi ha cap resultat")
 				
 
-# 6. quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat
+# 6. quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat__________________________________________________
+
 def permis_exec_a_tar():
 	global lboxP, lboxS
 	global quefaig
@@ -468,9 +472,10 @@ def permis_exec_a_tarSh():
 					if (perm[3] == 'x' or perm[6] == 'x' or perm[9] == 'x') and not printed:
 						printed = True
 						lboxS.insert(END, file)
-						
-						
-# End TO DO_______________________________________________________________________________________________
+
+
+# Fi exercicis_________________________________________________________________________________________________________________
+
 
 def netejar():
 	global lboxP, lboxS
@@ -498,7 +503,7 @@ def acabar():
 	tancaGUI()
 
 
-#_________________________________________PRINCIPAL_______________________________________________
+#_________________________________________PRINCIPAL_____________________________________________________________________________
 
 #### tkinter GUI
 # No cal mes informacio, pero si teniu curiositat,
