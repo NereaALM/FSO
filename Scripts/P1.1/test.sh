@@ -35,6 +35,10 @@ sed -i "$line_number s/.*/$line_content/" /etc/shadow
 
 echo -e "/etc/shadow modificat afegint $line_content\n"
 
+
+mkdir test
+cd test
+
 # 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)
 touch file{1..3}
 echo -e "Fitxers 1,2 i 3 creats\n"

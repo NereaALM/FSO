@@ -10,16 +10,10 @@ userdel aaa
 userdel aba
 userdel aaaaaaaa
 userdel bbbbbbbb
-echo -e "Usuaris esborrats\n"
+echo -e "Usuaris esborrats"
 
 # 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)
 # 5. quins ftxers tenen el bit SETUID activat
-rm file{1..3} 
-echo -e "Fitxers esborrats\n"
-
 # 6. quins ftxers d’arxivat (.tar o .tgz) contenen ftxers amb el bit X activat
-rm othersX.tar
-rm not_othersX.tar
-rm othersX.tgz
-rm not_othersX.tgz
-echo -e "Tars esborrats\n"
+rm -R test
+echo -e "Arxius de test esborrats"
