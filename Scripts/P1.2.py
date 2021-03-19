@@ -256,7 +256,7 @@ def massa_tempsSh(dies = -1):
 		# Lectura de fitxer /etc/shadow
 		args = ['cat', '/etc/shadow']
 		cat = subprocess.Popen(args, stdout=subprocess.PIPE)
-		file_content = str(cat.communicate()[0])[2:][:-3].split('\\')
+		file_content = str(cat.communicate()[0])[1:][:-3].split('\\')
 		
 		# Impressió de usuaris amb contrasenya antiga
 		for line in file_content:
@@ -266,7 +266,7 @@ def massa_tempsSh(dies = -1):
 			user_date = unix_ini_date + timedelta(days = int(user_days))
 			
 			if user_date < limit_date:
-				lboxS.insert(END, user)
+				lboxS.insert(END, user[1:])
 			
 
 # 4. quins ftxers tenen el permís d’execució per a els altres usuaris (others)______________________
