@@ -75,29 +75,24 @@ echo -e "$(grep '^sudo:.*$' /etc/group | cut -d: -f4)"
 
 
 echo -e "\n3. Usuaris amb contrasenya massa antiga:"
-if [ "$EUID" -ne 0 ]
-then
-	echo -e "\e[31mError: cal ser root per veure aquesta informació\e[0m"
-else
-	# Calcul data actual -300 dies
-	dmax_pass=$(date --date="-$dmax_pass days" +%Y%m%d)
-	
-	# Array amb usuari:data en dies desde 1970
-	ud_pass_array=($(cat /etc/shadow | cut -d: -f1,3))
-	
-	for ud_pass in "${ud_pass_array[@]}"
-	do
-		# data en segons desde 1970		
-		let d_pass=$(echo $ud_pass | cut -d: -f2)*24*60*60
-		# data última modificació contrasenya
-		d_pass=$(date -d"@$d_pass" +%Y%m%d)
+# Calcul data actual -300 dies
+dmax_pass=$(date --date="-$dmax_pass days" +%Y%m%d)
+
+# Array amb usuari:data en dies desde 1970
+ud_pass_array=($(sudo cat /etc/shadow | cut -d: -f1,3))
+
+for ud_pass in "${ud_pass_array[@]}"
+do
+	# data en segons desde 1970		
+	let d_pass=$(echo $ud_pass | cut -d: -f2)*24*60*60
+	# data última modificació contrasenya
+	d_pass=$(date -d"@$d_pass" +%Y%m%d)
 		
-		if [ $d_pass -lt $dmax_pass ]
-		then
-			echo $ud_pass | cut -d: -f1
-		fi
-	done	
-fi
+	if [ $d_pass -lt $dmax_pass ]
+	then
+		echo $ud_pass | cut -d: -f1
+	fi
+done
 
 
 ls -l -R $HOME > ls_aux
@@ -107,7 +102,7 @@ cat ls_aux | grep -e '^-[r-][w-][x-][r-][w-][x-][r-][w-][x]' | tr -s ' ' | cut -
 
 
 echo -e "\n5. Fitxers amb el bit SETUID activat:"
-cat ls_aux | grep -e '^-[r-][w-][s][r-][w-][x-][r-][w-][x-]' | tr -s ' ' | cut -d' ' -f9
+cat ls_aux | grep -e '^-[r-][w-][sS][r-][w-][x-][r-][w-][x-]' | tr -s ' ' | cut -d' ' -f9
 
 rm ls_aux
 
