@@ -61,11 +61,11 @@ echo "1. Usuaris amb nom massa curt:"
 user_array=($(cut -d: -f1 /etc/passwd))
 
  # Evaluació de longituds de noms
-for uname in "${user_array[@]}"
+for user_name in "${user_array[@]}"
 do
-	if [ ${#uname} -lt $lmin_name ]
+	if [ ${#user_name} -lt $lmin_name ]
 	then
-		echo -e "$uname\t${#uname}"
+		echo -e "$user_name\t${#user_name}"
 	fi
 done
 
@@ -131,7 +131,7 @@ done
 
 if [ -f tar_content ] 
 then
-	rm tar_content
+	rm -f tar_content
 fi
 
 
