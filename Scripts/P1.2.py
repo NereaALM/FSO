@@ -171,16 +171,10 @@ def sudoersSh():
 	
 # 3. quins usuaris fa massa temps que van canviar la seva contrasenya_____________________________
 
-# Funció per controlar execució en sudo i inicialitzar els dies sense canvis
+# Funció per inicialitzar els dies sense canvis
 def init_massa_temps(dies = -1):
 	
-	# Controls de permis d'execució sudo
-	if dies != -2 and os.getuid() != 0:
-		messagebox.showinfo(message="S'ha d'executar com a sudo per fer aquesta funció", title="Avis")
-		dies = -2
-	
-	# Inicialització de dies
-	elif dies == -1:
+	if dies == -1:
 		is_def_lim = messagebox.askyesno("Limit de temps",
 		"Vols definir el limit de temps sense canviar la contrasenya o deixar el temps per defecte (300 dies)?")
 		if is_def_lim:
@@ -220,19 +214,20 @@ def massa_tempsPy(dies = -1):
 		unix_ini_date = date(1970, 1, 1)
 		
 		# Lectura de fitxer /etc/shadow
-		shadow_file = open('/etc/shadow', 'r')
-		flines_list = shadow_file.readlines()
-		shadow_file.close()
+		args = ['sudo', 'cat', '/etc/shadow']
+		cat = subprocess.Popen(args, stdout=subprocess.PIPE)
+		file_content = str(cat.communicate()[0])[1:][:-3].split('\\')
 		
 		# Impressió de usuaris amb contrasenya antiga
-		for line in flines_list:
-			# Num de dies des del 1970 fins l'ultim canvi de password
-			user_date = line.split(':')[2]
-			# Data de ultim canvi
-			user_date = unix_ini_date + timedelta(days = int(user_date))
+		for line in file_content:
+			line = line.split(':')
+			user = line[0]
+			user_days = line[2]
+			user_date = unix_ini_date + timedelta(days = int(user_days))
 			
 			if user_date < limit_date:
-				lboxP.insert(END, line.split(':')[0])
+				lboxP.insert(END, user[1:])
+				
 	
 def massa_tempsSh(dies = -1):
 	global lboxS
@@ -254,7 +249,7 @@ def massa_tempsSh(dies = -1):
 		unix_ini_date = datetime(1970, 1, 1)
 		
 		# Lectura de fitxer /etc/shadow
-		args = ['cat', '/etc/shadow']
+		args = ['sudo', 'cat', '/etc/shadow']
 		cat = subprocess.Popen(args, stdout=subprocess.PIPE)
 		file_content = str(cat.communicate()[0])[1:][:-3].split('\\')
 		
