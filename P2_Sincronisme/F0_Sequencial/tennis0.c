@@ -374,11 +374,13 @@ void mou_paleta_ordinador(void)
 
 
 
-// programa principal
 int main(int n_args, const char *ll_args[])
 {
-	int tec, cont; // variables locals
+	int tec, cont;
 
+	// INICIALITZACIONS
+
+	// Lectura de parametres
 	if ((n_args != 2) && (n_args != 3))
 	{
 		fprintf(stderr, "Comanda: tennis0 fit_param [retard]\n");
@@ -386,33 +388,34 @@ int main(int n_args, const char *ll_args[])
 	}
 	carrega_parametres(ll_args[1]);
 
-	if (n_args == 3)
-		retard = atoi(ll_args[2]);
-	else
-		retard = 100;
+	// Assignacio de temps de retard
+	if (n_args == 3) retard = atoi(ll_args[2]);
+	else retard = 100;
 
-	if (inicialitza_joc() != 0) // intenta crear el taulell de joc
-		exit(4);				// aborta si hi ha algun problema amb taulell
+	// Crea taulell
+	if (inicialitza_joc() != 0) exit(4);
 
+	// JOC
 	do
 	{
 		tec = win_gettec();
-		if (tec != 0)
-			mou_paleta_usuari(tec);
+		
+		if (tec != 0)	mou_paleta_usuari(tec);
 		mou_paleta_ordinador();
 		cont = moure_pilota();
+		
 		win_retard(retard);
+	
 	} while ((tec != TEC_RETURN) && (cont == -1));
+	
 	win_fi();
 
-	if (tec == TEC_RETURN)
-		printf("S'ha aturat el joc amb la tecla RETURN!\n");
+	// FI DE JOC
+	if (tec == TEC_RETURN)	printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
 	{
-		if (cont == 0)
-			printf("Ha guanyat l'ordinador!\n");
-		else
-			printf("Ha guanyat l'usuari!\n");
+		if (cont == 0)	printf("Ha guanyat l'ordinador!\n");
+		else printf("Ha guanyat l'usuari!\n");
 	}
-	return (0);
+	return 0;
 }
