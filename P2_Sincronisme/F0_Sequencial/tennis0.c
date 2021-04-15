@@ -1,64 +1,64 @@
-/****************************************************************************/
-/*											 					            */
-/*		Tennis0.c											                */
-/*											 								*/
-/*	Programa inicial d'exemple per a les practiques 2 i 3 de ISO.			*/
-/*	Es tracta del joc del tennis: es dibuixa un camp de joc rectangular		*/
-/*	amb una porteria a cada costat, una paleta per l'usuari, una paleta	 	*/
-/*	per l'ordinador i una pilota que va rebotant per tot arreu; l'usuari	*/
-/*	disposa de dues tecles per controlar la seva paleta, mentre que l'or- 	*/
-/*	dinador mou la seva automaticament (amunt i avall). Evidentment, es	 	*/
-/*	tracta d'intentar col.locar la pilota a la porteria de l'ordinador		*/
-/*	(porteria de la dreta), abans que l'ordinador aconseguixi col.locar	 	*/
-/*	la pilota dins la porteria de l'usuari (porteria de l'esquerra).		*/
-/*																			*/
-/*	Arguments del programa:								 					*/
-/*	per controlar la posicio de tots els elements del joc, cal indicar		*/
-/*	el nom d'un fitxer de text que contindra la seguent informacio:		    */
-/*	nFil_taulell nCol_taulell mida_porteria long_pal						*/
-/*	fil_pilota_R col_pilota_R v_fil_pilota_R v_col_pilota_R					*/
-/*	fil_pal_maq col_pal_maq po_vf							 				*/
-/*											 								*/
-/*	on 'nFil_taulell', 'nCol_taulell' son les dimensions del taulell de joc,*/
-/*	 'mida_porteria'														*/
-/*	es la mida de les dues porteries, 'long_pal' es la longitud de les dues	*/
-/*	paletes; 'fil_pilota_R', 'col_pilota_R' es la posicio inicial 			*/
-/*	(fila,columna) de la pilota, mentre que 'v_fil_pilota_R', 				*/
-/*	'v_col_pilota_R' es la velocitat inicial;								*/
-/*	finalment, 'fil_pal_maq', 'col_pal_maq' indicara la posicio del primer 	*/
-/*	caracter de la paleta de l'ordinador, mentre que la seva velocitat 		*/
-/*	vertica ve determinada pel parametre 'po_fv'.				 			*/
-/*											 								*/
-/*	A mes, es podra afegir un segon argument opcional per indicar el		*/
-/*	retard de moviment de la pilota i la paleta de l'ordinador (en ms);	 	*/
-/*	el valor d'aquest parametre per defecte es 100 (1 decima de segon).	 	*/
-/*											 								*/
-/*	Compilar i executar:									 				*/
-/*	El programa invoca les funcions definides en 'winsuport.o', les			*/
-/*	quals proporcionen una interficie senzilla per a crear una finestra	 	*/
-/*	de text on es poden imprimir caracters en posicions especifiques de	 	*/
-/*	la pantalla (basada en CURSES); per tant, el programa necessita ser	 	*/
-/*	compilat amb la llibreria 'curses':						 				*/
-/*											 								*/
-/*	$ gcc tennis0.c winsuport.o -o tennis0 -lcurses				 			*/
-/*	$ tennis0 fit_param [retard]							 				*/
-/*											 								*/
-/*	Codis de retorn:										 				*/
-/*	El programa retorna algun dels seguents codis al SO:				 	*/
-/*	0	==>	funcionament normal							 					*/
-/*	1	==>	numero d'arguments incorrecte 						 			*/
-/*	2	==>	fitxer no accessible							 				*/
-/*	3	==>	dimensions del taulell incorrectes					 			*/
-/*	4	==>	parametres de la pilota incorrectes					 			*/
-/*	5	==>	parametres d'alguna de les paletes incorrectes				 	*/
-/*	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)	 	*/
-/****************************************************************************/
+//**************************************************************************
+//											 					            
+//		Tennis0.c											                
+//											 								
+//	Programa inicial d'exemple per a les practiques 2 i 3 de ISO.			
+//	Es tracta del joc del tennis: es dibuixa un camp de joc rectangular		
+//	amb una porteria a cada costat, una paleta per l'usuari, una paleta	 	
+//	per l'ordinador i una pilota que va rebotant per tot arreu; l'usuari	
+//	disposa de dues tecles per controlar la seva paleta, mentre que l'or- 	
+//	dinador mou la seva automaticament (amunt i avall). Evidentment, es	 	
+//	tracta d'intentar col.locar la pilota a la porteria de l'ordinador		
+//	(porteria de la dreta), abans que l'ordinador aconseguixi col.locar	 	
+//	la pilota dins la porteria de l'usuari (porteria de l'esquerra).		
+//																			
+//	Arguments del programa:								 					
+//	per controlar la posicio de tots els elements del joc, cal indicar		
+//	el nom d'un fitxer de text que contindra la seguent informacio:		    
+//	nFil_taulell nCol_taulell mida_porteria long_pal						
+//	fil_pilota_R col_pilota_R v_fil_pilota_R v_col_pilota_R					
+//	fil_pal_maq col_pal_maq po_vf							 				
+//											 								
+//	on 'nFil_taulell', 'nCol_taulell' son les dimensions del taulell de joc,
+//	 'mida_porteria'														
+//	es la mida de les dues porteries, 'long_pal' es la longitud de les dues	
+//	paletes; 'fil_pilota_R', 'col_pilota_R' es la posicio inicial 			
+//	(fila,columna) de la pilota, mentre que 'v_fil_pilota_R', 				
+//	'v_col_pilota_R' es la velocitat inicial;								
+//	finalment, 'fil_pal_maq', 'col_pal_maq' indicara la posicio del primer 	
+//	caracter de la paleta de l'ordinador, mentre que la seva velocitat 		
+//	vertica ve determinada pel parametre 'po_fv'.				 			
+//											 								
+//	A mes, es podra afegir un segon argument opcional per indicar el		
+//	retard de moviment de la pilota i la paleta de l'ordinador (en ms);	 	
+//	el valor d'aquest parametre per defecte es 100 (1 decima de segon).	 	
+//											 								
+//	Compilar i executar:									 				
+//	El programa invoca les funcions definides en 'winsuport.o', les			
+//	quals proporcionen una interficie senzilla per a crear una finestra	 	
+//	de text on es poden imprimir caracters en posicions especifiques de	 	
+//	la pantalla (basada en CURSES); per tant, el programa necessita ser	 	
+//	compilat amb la llibreria 'curses':						 				
+//											 								
+//	$ gcc tennis0.c winsuport.o -o tennis0 -lcurses				 			
+//	$ tennis0 fit_param [retard]							 				
+//											 								
+//	Codis de retorn:										 				
+//	El programa retorna algun dels seguents codis al SO:				 	
+//	0	==>	funcionament normal							 					
+//	1	==>	numero d'arguments incorrecte 						 			
+//	2	==>	fitxer no accessible							 				
+//	3	==>	dimensions del taulell incorrectes					 			
+//	4	==>	parametres de la pilota incorrectes					 			
+//	5	==>	parametres d'alguna de les paletes incorrectes				 	
+//	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)	 	
+//**************************************************************************
 
 
 
-/****************************************************************************/
-/* 								 DEFINICIONS    							*/
-/****************************************************************************/
+//**************************************************************************
+// 	DEFINICIONS    							
+//**************************************************************************
 
 
 
@@ -107,9 +107,9 @@ int retard;
 
 
 
-/****************************************************************************/
-/* 						   			FUNCIONS								*/
-/****************************************************************************/
+//**************************************************************************
+// 	FUNCIONS								
+//**************************************************************************
 
 
 
@@ -368,15 +368,16 @@ void mou_paleta_ordinador(void)
 
 
 
-/****************************************************************************/
-/* 								PRINCIPAL									*/
-/****************************************************************************/
+//**************************************************************************
+// 	PRINCIPAL									
+//**************************************************************************
 
 
 
 int main(int n_args, const char *ll_args[])
 {
-	int tec, cont;
+	int tec;
+	int cont;
 
 	// INICIALITZACIONS
 
