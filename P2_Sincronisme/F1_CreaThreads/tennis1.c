@@ -66,6 +66,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "winsuport.h"
+#include <pthread.h>
 
 // Limits de globals
 #define MIN_FIL 7
@@ -75,10 +76,13 @@
 #define MIN_PAL 3
 #define MIN_VEL -1.0
 #define MAX_VEL 1.0
+#define MAX_THREADS 11
+
+
 
 // Variables globals
 
-// Parametres de Joc
+// Mides del camp i elements del joc
 int nFil_taulell;
 int nCol_taulell;
 int mida_porteria;
@@ -104,6 +108,14 @@ float v_col_pilota_R;
 
 // Retard del joc en ms
 int retard;
+
+// Gestio de la partida
+int tecla;
+int cont;
+
+// Threads
+int num_threads;
+pthread_t taula_threads[MAX_THREADS];
 
 
 
@@ -182,7 +194,10 @@ void carrega_parametres(const char *nom_fit)
 // funcio per inicialitar les variables i visualitzar l'estat inicial del joc
 int inicialitza_joc(void)
 {
-	int i, i_port, f_port, retwin;
+	int i;
+	int i_port;
+	int f_port;
+	int retwin;
 	char strin[51];
 
 	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS); // intenta crear taulell
@@ -247,123 +262,147 @@ int inicialitza_joc(void)
 //	-1 ==> la pilota no ha sortit del taulell
 //	 0 ==> la pilota ha sortit per la porteria esquerra
 //	>0 ==> la pilota ha sortit per la porteria dreta
-int moure_pilota(void)
+// cap no conte informacio
+void * moure_pilota(void * cap)
 {
-	int f_h, c_h, result;
-	char rh, rv, rd;
+	int f_h;
+	int c_h;
+	char rh;
+	char rv;
+	char rd;
 
-	f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
-	c_h = col_pilota_R + v_col_pilota_R;
-	result = -1; // inicialment suposem que la pilota no surt
-	rh = rv = rd = ' ';
-	if ((f_h != fil_pilota) || (c_h != col_pilota))
-	{						   // si posicio hipotetica no coincideix amb la pos. actual
-		if (f_h != fil_pilota) // provar rebot vertical
-		{
-			rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
-			if (rv != ' ')					   // si no hi ha res
+	do
+	{	
+		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
+		c_h = col_pilota_R + v_col_pilota_R;
+		cont = -1; // inicialment suposem que la pilota no surt
+		rh = rv = rd = ' ';
+		if ((f_h != fil_pilota) || (c_h != col_pilota))
+		{						   // si posicio hipotetica no coincideix amb la pos. actual
+			if (f_h != fil_pilota) // provar rebot vertical
 			{
-				v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
-				f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
+				rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
+				if (rv != ' ')					   // si no hi ha res
+				{
+					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
+					f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
+				}
+			}
+			if (c_h != col_pilota) // provar rebot horitzontal
+			{
+				rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
+				if (rh != ' ')					   // si no hi ha res
+				{
+					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
+					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
+				}
+			}
+			if ((f_h != fil_pilota) && (c_h != col_pilota)) // provar rebot diagonal
+			{
+				rd = win_quincar(f_h, c_h);
+				if (rd != ' ') // si no hi ha obstacle
+				{
+					v_fil_pilota_R = -v_fil_pilota_R;
+					v_col_pilota_R = -v_col_pilota_R; // canvia velocitats
+					f_h = fil_pilota_R + v_fil_pilota_R;
+					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
+				}
+			}
+			if (win_quincar(f_h, c_h) == ' ')					   // verificar posicio definitiva
+			{													   // si no hi ha obstacle
+				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
+				fil_pilota_R += v_fil_pilota_R;
+				col_pilota_R += v_col_pilota_R;
+				fil_pilota = f_h;
+				col_pilota = c_h;									   // actualitza posicio actual
+				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))  // si no surt
+					win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota
+				else
+					cont = col_pilota; // codi de finalitzacio de partida
 			}
 		}
-		if (c_h != col_pilota) // provar rebot horitzontal
+		else
 		{
-			rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
-			if (rh != ' ')					   // si no hi ha res
-			{
-				v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
-				c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
-			}
-		}
-		if ((f_h != fil_pilota) && (c_h != col_pilota)) // provar rebot diagonal
-		{
-			rd = win_quincar(f_h, c_h);
-			if (rd != ' ') // si no hi ha obstacle
-			{
-				v_fil_pilota_R = -v_fil_pilota_R;
-				v_col_pilota_R = -v_col_pilota_R; // canvia velocitats
-				f_h = fil_pilota_R + v_fil_pilota_R;
-				c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
-			}
-		}
-		if (win_quincar(f_h, c_h) == ' ')					   // verificar posicio definitiva
-		{													   // si no hi ha obstacle
-			win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
-			fil_pilota = f_h;
-			col_pilota = c_h;									   // actualitza posicio actual
-			if ((col_pilota > 0) && (col_pilota <= nCol_taulell))  // si no surt
-				win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota
-			else
-				result = col_pilota; // codi de finalitzacio de partida
 		}
-	}
-	else
-	{
-		fil_pilota_R += v_fil_pilota_R;
-		col_pilota_R += v_col_pilota_R;
-	}
-	return (result);
+
+	} while ((tecla != TEC_RETURN) && (cont == -1));
 }
 
 
 // funcio per moure la paleta de l'usuari en funcio de la tecla premuda
-void mou_paleta_usuari(int tecla)
+// cap no conte informacio
+void * mou_paleta_usuari(void * cap)
 {
-	if ((tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
-	{
-		win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
-		fil_pal_usu++;														// actualitza posicio
-		win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
-	}
-	if ((tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
-	{
-		win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
-		fil_pal_usu--;														// actualitza posicio
-		win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
-	}
+	do
+	{	
+		tecla = win_gettec();
+		if (tecla != 0)
+		{
+			if ((tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
+			{
+				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
+				fil_pal_usu++;														// actualitza posicio
+				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
+			}
+			if ((tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
+			{
+				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
+				fil_pal_usu--;														// actualitza posicio
+				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
+			}
+		}
+	} while ((tecla != TEC_RETURN) && (cont == -1));
 }
 
 
 // funcio per moure la paleta de l'ordinador autonomament, en funcio de la
 // velocitat de la paleta (variable global v_pal_maq)
-void mou_paleta_ordinador(void)
+// index serà un enter que indicara l’ordre de creació de la paleta 
+// 		0 -> primera paleta (1)
+//		1 -> segona paleta 	(2)
+//		...
+//		8 -> novena paleta 	(9)
+void * mou_paleta_ordinador(void * index)
 {
 	int f_h;
 	// char rh,rv,rd;
 
-	f_h = pVertical_pal_maq + v_pal_maq; // posicio hipotetica de la paleta
-	if (f_h != fil_pal_maq)				 // si pos. hipotetica no coincideix amb pos. actual
+	do 
 	{
-		if (v_pal_maq > 0.0) // verificar moviment cap avall
+		f_h = pVertical_pal_maq + v_pal_maq; // posicio hipotetica de la paleta
+		if (f_h != fil_pal_maq)				 // si pos. hipotetica no coincideix amb pos. actual
 		{
-			if (win_quincar(f_h + long_pal - 1, col_pal_maq) == ' ') // si no hi ha obstacle
+			if (v_pal_maq > 0.0) // verificar moviment cap avall
 			{
-				win_escricar(fil_pal_maq, col_pal_maq, ' ', NO_INV); // esborra primer bloc
-				pVertical_pal_maq += v_pal_maq;
-				fil_pal_maq = pVertical_pal_maq;									// actualitza posicio
-				win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, '1', INVERS); // impr. ultim bloc
+				if (win_quincar(f_h + long_pal - 1, col_pal_maq) == ' ') // si no hi ha obstacle
+				{
+					win_escricar(fil_pal_maq, col_pal_maq, ' ', NO_INV); // esborra primer bloc
+					pVertical_pal_maq += v_pal_maq;
+					fil_pal_maq = pVertical_pal_maq;									// actualitza posicio
+					win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, '1', INVERS); // impr. ultim bloc
+				}
+				else // si hi ha obstacle, canvia el sentit del moviment
+					v_pal_maq = -v_pal_maq;
 			}
-			else // si hi ha obstacle, canvia el sentit del moviment
-				v_pal_maq = -v_pal_maq;
-		}
-		else // verificar moviment cap amunt
-		{
-			if (win_quincar(f_h, col_pal_maq) == ' ') // si no hi ha obstacle
+			else // verificar moviment cap amunt
 			{
-				win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, ' ', NO_INV); // esbo. ultim bloc
-				pVertical_pal_maq += v_pal_maq;
-				fil_pal_maq = pVertical_pal_maq;					 // actualitza posicio
-				win_escricar(fil_pal_maq, col_pal_maq, '1', INVERS); // impr. primer bloc
+				if (win_quincar(f_h, col_pal_maq) == ' ') // si no hi ha obstacle
+				{
+					win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, ' ', NO_INV); // esbo. ultim bloc
+					pVertical_pal_maq += v_pal_maq;
+					fil_pal_maq = pVertical_pal_maq;					 // actualitza posicio
+					win_escricar(fil_pal_maq, col_pal_maq, '1', INVERS); // impr. primer bloc
+				}
+				else // si hi ha obstacle, canvia el sentit del moviment
+					v_pal_maq = -v_pal_maq;
 			}
-			else // si hi ha obstacle, canvia el sentit del moviment
-				v_pal_maq = -v_pal_maq;
 		}
-	}
-	else
-		pVertical_pal_maq += v_pal_maq; // actualitza posicio vertical real de la paleta
+		else
+			pVertical_pal_maq += v_pal_maq; // actualitza posicio vertical real de la paleta
+
+	} while ((tecla != TEC_RETURN) && (cont == -1));
 }
 
 
@@ -376,9 +415,6 @@ void mou_paleta_ordinador(void)
 
 int main(int n_args, const char *ll_args[])
 {
-	int tec;
-	int cont;
-
 	// INICIALITZACIONS
 
 	// Lectura de parametres
@@ -393,26 +429,31 @@ int main(int n_args, const char *ll_args[])
 	if (n_args == 3) retard = atoi(ll_args[2]);
 	else retard = 100;
 
-	// Crea taulell
+	// Creacio del taulell de joc
 	if (inicialitza_joc() != 0) exit(4);
+
+	// Creacio de threads
+	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
+	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
+
+	for (int i = 2; i < num_threads; i++)
+		pthread_create(&taula_threads[i], NULL, mou_paleta_ordinador, (void *)i);
 
 	// JOC
 	do
-	{
-		tec = win_gettec();
-		
-		if (tec != 0)	mou_paleta_usuari(tec);
-		mou_paleta_ordinador();
-		cont = moure_pilota();
-		
+	{	
+		// TO DO: mostra temps de partida
 		win_retard(retard);
+
+	} while ((tecla != TEC_RETURN) && (cont == -1));
 	
-	} while ((tec != TEC_RETURN) && (cont == -1));
-	
+	for (int i = 0; i < num_threads; i++)
+		pthread_join(taula_threads[i], NULL); // TO DO: 2nd param que deberia contener?
+
 	win_fi();
 
 	// FI DE JOC
-	if (tec == TEC_RETURN)	printf("S'ha aturat el joc amb la tecla RETURN!\n");
+	if (tecla == TEC_RETURN)	printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
 	{
 		if (cont == 0)	printf("Ha guanyat l'ordinador!\n");
