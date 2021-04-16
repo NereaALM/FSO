@@ -1,70 +1,67 @@
 //**************************************************************************
-//											 					            
-//	Tennis1.c											                
-//											 								
-//	Programa inicial d'exemple per a les practiques 2 i 3 de ISO.			
-//	Es tracta del joc del tennis: es dibuixa un camp de joc rectangular		
-//	amb una porteria a cada costat, una paleta per l'usuari, una paleta	 	
-//	per l'ordinador i una pilota que va rebotant per tot arreu; l'usuari	
-//	disposa de dues tecles per controlar la seva paleta, mentre que l'or- 	
-//	dinador mou la seva automaticament (amunt i avall). Evidentment, es	 	
-//	tracta d'intentar col.locar la pilota a la porteria de l'ordinador		
-//	(porteria de la dreta), abans que l'ordinador aconseguixi col.locar	 	
-//	la pilota dins la porteria de l'usuari (porteria de l'esquerra).		
-//																			
-//	Arguments del programa:								 					
-//	per controlar la posicio de tots els elements del joc, cal indicar		
-//	el nom d'un fitxer de text que contindra la seguent informacio:		    
-//	nFil_taulell nCol_taulell mida_porteria long_pal						
-//	fil_pilota_R col_pilota_R v_fil_pilota_R v_col_pilota_R					
-//	fil_pal_maq col_pal_maq po_vf							 				
-//											 								
+//
+//	Tennis1.c
+//
+//	Programa inicial d'exemple per a les practiques 2 i 3 de ISO.
+//	Es tracta del joc del tennis: es dibuixa un camp de joc rectangular
+//	amb una porteria a cada costat, una paleta per l'usuari, una paleta
+//	per l'ordinador i una pilota que va rebotant per tot arreu; l'usuari
+//	disposa de dues tecles per controlar la seva paleta, mentre que l'or-
+//	dinador mou la seva automaticament (amunt i avall). Evidentment, es
+//	tracta d'intentar col.locar la pilota a la porteria de l'ordinador
+//	(porteria de la dreta), abans que l'ordinador aconseguixi col.locar
+//	la pilota dins la porteria de l'usuari (porteria de l'esquerra).
+//
+//	Arguments del programa:
+//	per controlar la posicio de tots els elements del joc, cal indicar
+//	el nom d'un fitxer de text que contindra la seguent informacio:
+//	nFil_taulell nCol_taulell mida_porteria long_pal
+//	fil_pilota_R col_pilota_R v_fil_pilota_R v_col_pilota_R
+//	fil_pal_maq col_pal_maq po_vf
+//
 //	on 'nFil_taulell', 'nCol_taulell' son les dimensions del taulell de joc,
-//	 'mida_porteria'														
-//	es la mida de les dues porteries, 'long_pal' es la longitud de les dues	
-//	paletes; 'fil_pilota_R', 'col_pilota_R' es la posicio inicial 			
-//	(fila,columna) de la pilota, mentre que 'v_fil_pilota_R', 				
-//	'v_col_pilota_R' es la velocitat inicial;								
-//	finalment, 'fil_pal_maq', 'col_pal_maq' indicara la posicio del primer 	
-//	caracter de la paleta de l'ordinador, mentre que la seva velocitat 		
-//	vertica ve determinada pel parametre 'po_fv'.				 			
-//											 								
-//	A mes, es podra afegir un segon argument opcional per indicar el		
-//	retard de moviment de la pilota i la paleta de l'ordinador (en ms);	 	
-//	el valor d'aquest parametre per defecte es 100 (1 decima de segon).	 	
-//											 								
-//	Compilar i executar:									 				
-//	El programa invoca les funcions definides en 'winsuport.o', les			
-//	quals proporcionen una interficie senzilla per a crear una finestra	 	
-//	de text on es poden imprimir caracters en posicions especifiques de	 	
-//	la pantalla (basada en CURSES); per tant, el programa necessita ser	 	
-//	compilat amb la llibreria 'curses':						 				
-//											 								
-//	$ gcc tennis1.c winsuport.o -o tennis1 -lcurses				 			
-//	$ tennis1 fit_param [retard]							 				
-//											 								
-//	Codis de retorn:										 				
-//	El programa retorna algun dels seguents codis al SO:				 	
-//	0	==>	funcionament normal							 					
-//	1	==>	numero d'arguments incorrecte 						 			
-//	2	==>	fitxer no accessible							 				
-//	3	==>	dimensions del taulell incorrectes					 			
-//	4	==>	parametres de la pilota incorrectes					 			
-//	5	==>	parametres d'alguna de les paletes incorrectes				 	
-//	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)	 	
+//	 'mida_porteria'
+//	es la mida de les dues porteries, 'long_pal' es la longitud de les dues
+//	paletes; 'fil_pilota_R', 'col_pilota_R' es la posicio inicial
+//	(fila,columna) de la pilota, mentre que 'v_fil_pilota_R',
+//	'v_col_pilota_R' es la velocitat inicial;
+//	finalment, 'fil_pal_maq', 'col_pal_maq' indicara la posicio del primer
+//	caracter de la paleta de l'ordinador, mentre que la seva velocitat
+//	vertica ve determinada pel parametre 'po_fv'.
+//
+//	A mes, es podra afegir un segon argument opcional per indicar el
+//	retard de moviment de la pilota i la paleta de l'ordinador (en ms);
+//	el valor d'aquest parametre per defecte es 100 (1 decima de segon).
+//
+//	Compilar i executar:
+//	El programa invoca les funcions definides en 'winsuport.o', les
+//	quals proporcionen una interficie senzilla per a crear una finestra
+//	de text on es poden imprimir caracters en posicions especifiques de
+//	la pantalla (basada en CURSES); per tant, el programa necessita ser
+//	compilat amb la llibreria 'curses':
+//
+//	$ gcc tennis1.c winsuport.o -o tennis1 -lcurses
+//	$ tennis1 fit_param num_paletes [retard]
+//
+//	Codis de retorn:
+//	El programa retorna algun dels seguents codis al SO:
+//	0	==>	funcionament normal
+//	1	==>	numero d'arguments incorrecte
+//	2	==>	fitxer no accessible
+//	3	==>	dimensions del taulell incorrectes
+//	4	==>	parametres de la pilota incorrectes
+//	5	==>	parametres d'alguna de les paletes incorrectes
+//	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)
 ///*************************************************************************
 
-
-
 ///*************************************************************************
-// 	DEFINICIONS    							
+// 	DEFINICIONS
 ///*************************************************************************
-
-
 
 // Llibreries
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "winsuport.h"
 #include <pthread.h>
 
@@ -76,9 +73,9 @@
 #define MIN_PAL 3
 #define MIN_VEL -1.0
 #define MAX_VEL 1.0
+#define MIN_PAL_MAQ 1
+#define MAX_PAL_MAQ 9
 #define MAX_THREADS 11
-
-
 
 // Variables globals
 
@@ -93,6 +90,7 @@ int fil_pal_usu;
 int col_pal_usu;
 
 // Posicio i velocitat maquina
+// TO DO: convertir en vectores
 int fil_pal_maq;
 int col_pal_maq;
 float pVertical_pal_maq;
@@ -114,16 +112,11 @@ int tecla;
 int cont;
 
 // Threads
-int num_threads;
 pthread_t taula_threads[MAX_THREADS];
 
-
-
 ///*************************************************************************
-// 	FUNCIONS								
+// 	FUNCIONS
 //**************************************************************************
-
-
 
 // funcio per realitzar la carrega dels parametres de joc emmagatzemats
 // dins un fitxer de text, el nom del qual es passa per referencia en
@@ -133,6 +126,8 @@ pthread_t taula_threads[MAX_THREADS];
 void carrega_parametres(const char *nom_fit)
 {
 	FILE *fit;
+
+	// TO DO: inicialitzar les paletes
 
 	fit = fopen(nom_fit, "rt"); // intenta obrir fitxer
 	if (fit == NULL)
@@ -190,7 +185,6 @@ void carrega_parametres(const char *nom_fit)
 	fclose(fit); // fitxer carregat: tot OK!
 }
 
-
 // funcio per inicialitar les variables i visualitzar l'estat inicial del joc
 int inicialitza_joc(void)
 {
@@ -199,6 +193,8 @@ int inicialitza_joc(void)
 	int f_port;
 	int retwin;
 	char strin[51];
+
+	// TO DO: inicialitzar les paletes
 
 	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS); // intenta crear taulell
 
@@ -256,14 +252,13 @@ int inicialitza_joc(void)
 	return (0);
 }
 
-
 // funcio per moure la pilota; retorna un valor amb alguna d'aquestes
 // possibilitats:
 //	-1 ==> la pilota no ha sortit del taulell
 //	 0 ==> la pilota ha sortit per la porteria esquerra
 //	>0 ==> la pilota ha sortit per la porteria dreta
 // cap no conte informacio
-void * moure_pilota(void * cap)
+void *moure_pilota(void *cap)
 {
 	int f_h;
 	int c_h;
@@ -272,7 +267,7 @@ void * moure_pilota(void * cap)
 	char rd;
 
 	do
-	{	
+	{
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
 		cont = -1; // inicialment suposem que la pilota no surt
@@ -328,15 +323,16 @@ void * moure_pilota(void * cap)
 		}
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
-}
 
+	return 0;
+}
 
 // funcio per moure la paleta de l'usuari en funcio de la tecla premuda
 // cap no conte informacio
-void * mou_paleta_usuari(void * cap)
+void *mou_paleta_usuari(void *cap)
 {
 	do
-	{	
+	{
 		tecla = win_gettec();
 		if (tecla != 0)
 		{
@@ -354,22 +350,23 @@ void * mou_paleta_usuari(void * cap)
 			}
 		}
 	} while ((tecla != TEC_RETURN) && (cont == -1));
-}
 
+	return 0;
+}
 
 // funcio per moure la paleta de l'ordinador autonomament, en funcio de la
 // velocitat de la paleta (variable global v_pal_maq)
-// index serà un enter que indicara l’ordre de creació de la paleta 
+// index serà un enter que indicara l’ordre de creació de la paleta
 // 		0 -> primera paleta (1)
 //		1 -> segona paleta 	(2)
 //		...
 //		8 -> novena paleta 	(9)
-void * mou_paleta_ordinador(void * index)
+void *mou_paleta_ordinador(void *index)
 {
 	int f_h;
 	// char rh,rv,rd;
 
-	do 
+	do
 	{
 		f_h = pVertical_pal_maq + v_pal_maq; // posicio hipotetica de la paleta
 		if (f_h != fil_pal_maq)				 // si pos. hipotetica no coincideix amb pos. actual
@@ -381,7 +378,7 @@ void * mou_paleta_ordinador(void * index)
 					win_escricar(fil_pal_maq, col_pal_maq, ' ', NO_INV); // esborra primer bloc
 					pVertical_pal_maq += v_pal_maq;
 					fil_pal_maq = pVertical_pal_maq;									// actualitza posicio
-					win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, '1', INVERS); // impr. ultim bloc
+					win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, (int) (intptr_t) index, INVERS); // impr. ultim bloc
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq = -v_pal_maq;
@@ -393,7 +390,7 @@ void * mou_paleta_ordinador(void * index)
 					win_escricar(fil_pal_maq + long_pal - 1, col_pal_maq, ' ', NO_INV); // esbo. ultim bloc
 					pVertical_pal_maq += v_pal_maq;
 					fil_pal_maq = pVertical_pal_maq;					 // actualitza posicio
-					win_escricar(fil_pal_maq, col_pal_maq, '1', INVERS); // impr. primer bloc
+					win_escricar(fil_pal_maq, col_pal_maq, (int) (intptr_t) index, INVERS); // impr. primer bloc
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq = -v_pal_maq;
@@ -403,64 +400,88 @@ void * mou_paleta_ordinador(void * index)
 			pVertical_pal_maq += v_pal_maq; // actualitza posicio vertical real de la paleta
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
+
+	return 0;
 }
 
-
-
 //**************************************************************************
-// 	PRINCIPAL									
+// 	PRINCIPAL
 //**************************************************************************
-
-
 
 int main(int n_args, const char *ll_args[])
 {
-	void * thread_output;
+	int num_threads;
+	int num_pal_maq;
+	int index_pal_maq;
+	int thread_output;
 
-	// INICIALITZACIONS
+	// INICIALITZACIONS I CONTROL D'ERRORS
 
-	// Lectura de parametres
-	if ((n_args != 2) && (n_args != 3))
+	// Nombre de parametres valid
+	if ((n_args != 3) && (n_args != 4))
 	{
-		fprintf(stderr, "Comanda: tennis1 fit_param [retard]\n");
+		fprintf(stderr, "Comanda: tennis1 fit_param num_paletes [retard]\n");
 		exit(1);
 	}
+	
+	// Nombre de paletes valid
+	num_pal_maq = atoi(ll_args[2]);
+	if (num_pal_maq <= MIN_PAL_MAQ && num_pal_maq >= MAX_PAL_MAQ)
+	{
+		fprintf(stderr, "Parametre invalid: num_paletes fora de rang\n");
+		exit(1);
+	}
+
 	carrega_parametres(ll_args[1]);
 
 	// Assignacio de temps de retard
-	if (n_args == 3) retard = atoi(ll_args[2]);
-	else retard = 100;
+	if (n_args == 3)
+		retard = atoi(ll_args[3]);
+	else
+		retard = 100;
 
 	// Creacio del taulell de joc
-	if (inicialitza_joc() != 0) exit(4);
+	if (inicialitza_joc() != 0)
+		exit(4);
+
+	
+	// Inicialitzacio de variables de threads
+	num_threads = num_pal_maq + 2;
+	thread_output = -1;
 
 	// Creacio de threads
 	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
 	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
 
 	for (int i = 2; i < num_threads; i++)
-		pthread_create(&taula_threads[i], NULL, mou_paleta_ordinador, (void *)i);
+	{
+		index_pal_maq = i - 1;
+		pthread_create(&taula_threads[i], NULL, mou_paleta_ordinador, (void *)(intptr_t) index_pal_maq);
+	}
 
 	// JOC
 	do
-	{	
+	{
 		// TO DO: mostra temps de partida
 		win_retard(retard);
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
-	
+
 	// Espera a threads
 	for (int i = 0; i < num_threads; i++)
-		pthread_join(taula_threads[i], thread_output);
+		pthread_join(taula_threads[i], (void *)(intptr_t) thread_output);
 
 	win_fi();
 
 	// FI DE JOC
-	if (tecla == TEC_RETURN)	printf("S'ha aturat el joc amb la tecla RETURN!\n");
+	if (tecla == TEC_RETURN)
+		printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
 	{
-		if (cont == 0)	printf("Ha guanyat l'ordinador!\n");
-		else printf("Ha guanyat l'usuari!\n");
+		if (cont == 0)
+			printf("Ha guanyat l'ordinador!\n");
+		else
+			printf("Ha guanyat l'usuari!\n");
 	}
 	return 0;
 }
