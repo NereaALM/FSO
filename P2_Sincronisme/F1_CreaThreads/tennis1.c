@@ -415,6 +415,8 @@ void * mou_paleta_ordinador(void * index)
 
 int main(int n_args, const char *ll_args[])
 {
+	void * thread_output;
+
 	// INICIALITZACIONS
 
 	// Lectura de parametres
@@ -447,8 +449,9 @@ int main(int n_args, const char *ll_args[])
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 	
+	// Espera a threads
 	for (int i = 0; i < num_threads; i++)
-		pthread_join(taula_threads[i], NULL); // TO DO: 2nd param que deberia contener?
+		pthread_join(taula_threads[i], thread_output);
 
 	win_fi();
 
