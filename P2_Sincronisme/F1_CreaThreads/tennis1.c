@@ -124,7 +124,10 @@ pthread_t taula_threads[MAX_THREADS];
 // 'nom_fit'; si es detecta algun problema, la funcio avorta l'execucio
 // enviant un missatge per la sortida d'error i retornant el codi per-
 // tinent al SO (segons comentaris del principi del programa).
-void carrega_parametres(const char *nom_fit)
+// Parametres d'entrada:
+// - nom_fitxer amb camp de joc
+// - numero de paletes de la maquina a inicialitzar
+void carrega_parametres(const char *nom_fit, int num_pal_maq)
 {
 	FILE *fit;
 
@@ -168,42 +171,45 @@ void carrega_parametres(const char *nom_fit)
 		exit(4);
 	}
 
-	// TO DO: inicialitzar les paletes
 	// Parametres paleta ordinador
-	if (!feof(fit))
-		fscanf(fit, "%d %d %f\n", &fil_pal_maq, &col_pal_maq, &v_pal_maq);
-	if ((fil_pal_maq < 1) || (fil_pal_maq + long_pal > nFil_taulell - 2) ||
-		(col_pal_maq < 5) || (col_pal_maq > nCol_taulell - 2) ||
-		(v_pal_maq < MIN_VEL) || (v_pal_maq > MAX_VEL))
+	for (int i = 0; i < num_pal_maq; i++)
 	{
-		fprintf(stderr, "Error: parametres paleta ordinador incorrectes:\n");
-		fprintf(stderr, "\t1 =< fil_pal_maq (%d) =< nFil_taulell-long_pal-3 (%d)\n", fil_pal_maq,
-				(nFil_taulell - long_pal - 3));
-		fprintf(stderr, "\t5 =< col_pal_maq (%d) =< nCol_taulell-2 (%d)\n", col_pal_maq,
-				(nCol_taulell - 2));
-		fprintf(stderr, "\t%.1f =< v_pal_maq (%.1f) =< %.1f\n", MIN_VEL, v_pal_maq, MAX_VEL);
-		fclose(fit);
-		exit(5);
+		if (!feof(fit))
+			fscanf(fit, "%d %d %f\n", &fil_pal_maq[i], &col_pal_maq[i], &v_pal_maq[i]);
+		if ((fil_pal_maq[i] < 1) || (fil_pal_maq[i] + long_pal > nFil_taulell - 2) ||
+			(col_pal_maq[i] < 5) || (col_pal_maq[i] > nCol_taulell - 2) ||
+			(v_pal_maq[i] < MIN_VEL) || (v_pal_maq[i] > MAX_VEL))
+		{
+			fprintf(stderr, "Error: parametres paleta ordinador incorrectes:\n");
+			fprintf(stderr, "\t1 =< fil_pal_maq[i] (%d) =< nFil_taulell-long_pal-3 (%d)\n", fil_pal_maq[i],
+					(nFil_taulell - long_pal - 3));
+			fprintf(stderr, "\t5 =< col_pal_maq[i] (%d) =< nCol_taulell-2 (%d)\n", col_pal_maq[i],
+					(nCol_taulell - 2));
+			fprintf(stderr, "\t%.1f =< v_pal_maq[i] (%.1f) =< %.1f\n", MIN_VEL, v_pal_maq[i], MAX_VEL);
+			fclose(fit);
+			exit(5);
+		}
 	}
 
 	fclose(fit); 
 	
-	// fitxer carregat: tot OK!
+	// Fitxer carregat: tot OK!
 }
 
 // funcio per inicialitar les variables i visualitzar l'estat inicial del joc
-int inicialitza_joc(void)
+// Parametres d'entrada:
+// - numero de paletes de la maquina a inicialitzar
+int inicialitza_joc(int num_pal_maq)
 {
 	int i;
 	int i_port;
 	int f_port;
 	int retwin;
+	int index_pantalla;
 	char strin[51];
 
-	// TO DO: inicialitzar les paletes
-
-	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS); // intenta crear taulell
-
+	// Taulell
+	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS); 
 	if (retwin < 0) // si no pot crear l'entorn de joc amb les curses
 	{
 		fprintf(stderr, "Error en la creacio del taulell de joc:\t");
@@ -225,7 +231,8 @@ int inicialitza_joc(void)
 		return (retwin);
 	}
 
-	i_port = nFil_taulell / 2 - mida_porteria / 2; // crea els forats de la porteria
+	// Porteries
+	i_port = nFil_taulell / 2 - mida_porteria / 2; 
 	if (nFil_taulell % 2 == 0)
 		i_port--;
 	if (i_port == 0)
@@ -237,24 +244,35 @@ int inicialitza_joc(void)
 		win_escricar(i, nCol_taulell - 1, ' ', NO_INV);
 	}
 
+	// Paleta usuari
 	fil_pal_usu = nFil_taulell / 2;
-	col_pal_usu = 3; // inicialitzar pos. paletes
+	col_pal_usu = 3;
 	if (fil_pal_usu + long_pal >= nFil_taulell - 3)
 		fil_pal_usu = 1;
-	for (i = 0; i < long_pal; i++) // dibuixar paleta inicialment
-	{
-		win_escricar(fil_pal_usu + i, col_pal_usu, '0', INVERS);
-		win_escricar(fil_pal_maq + i, col_pal_maq, '1', INVERS);
-	}
-	pVertical_pal_maq = fil_pal_maq; // fixar valor real paleta ordinador
+	for (i = 0; i < long_pal; i++)
+		win_escricar(fil_pal_usu + i, col_pal_usu, '0', INVERS); // dibuixar paleta inicialment
 
+	// Paletes ordinador
+	for(int n_paleta = 0; n_paleta < num_pal_maq; n_paleta++)
+	{
+		for (i = 0; i < long_pal; i++)
+		{
+			index_pantalla = n_paleta + 1;
+			win_escricar(fil_pal_maq[n_paleta] + i, col_pal_maq[n_paleta], index_pantalla, INVERS);
+		}
+		pVertical_pal_maq[n_paleta] = fil_pal_maq[n_paleta]; // fixar valor real paleta ordinador
+	}
+
+	// Pilota
 	fil_pilota_R = fil_pilota;
 	col_pilota_R = col_pilota;						   // fixar valor real posicio pilota
 	win_escricar(fil_pilota, col_pilota, '.', INVERS); // dibuix inicial pilota
 
-	sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir.",
+	// Instruccions
+	sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir.", 
 			TEC_AMUNT, TEC_AVALL);
 	win_escristr(strin);
+
 	return (0);
 }
 
@@ -445,7 +463,7 @@ int main(int n_args, const char *ll_args[])
 	}
 
 	// Carrega de parametres en base a fitxer de camp donat
-	carrega_parametres(ll_args[1]);
+	carrega_parametres(ll_args[1], num_pal_maq);
 
 	// Assignacio de temps de retard
 	if (n_args == 4)
@@ -454,7 +472,7 @@ int main(int n_args, const char *ll_args[])
 		retard = 100;
 
 	// Creacio del taulell de joc
-	if (inicialitza_joc() != 0)
+	if (inicialitza_joc(num_pal_maq) != 0)
 		exit(4);
 
 	
