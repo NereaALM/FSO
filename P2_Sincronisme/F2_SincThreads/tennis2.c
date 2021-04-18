@@ -114,6 +114,7 @@ int cont;
 
 // Threads
 pthread_t taula_threads[MAX_THREADS];
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 ///*************************************************************************
 // 	FUNCIONS
@@ -305,6 +306,8 @@ void * moure_pilota(void * cap)
 
 	do
 	{
+		pthread_mutex_lock(&mutex);
+
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
 		cont = -1; // inicialment suposem que la pilota no surt
@@ -359,6 +362,8 @@ void * moure_pilota(void * cap)
 			col_pilota_R += v_col_pilota_R;
 		}
 
+		pthread_mutex_unlock(&mutex);
+
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
 	return 0;
@@ -370,6 +375,8 @@ void * mou_paleta_usuari(void * cap)
 {
 	do
 	{
+		pthread_mutex_lock(&mutex);
+		
 		tecla = win_gettec();
 		if (tecla != 0)
 		{
@@ -386,6 +393,9 @@ void * mou_paleta_usuari(void * cap)
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
 			}
 		}
+
+		pthread_mutex_unlock(&mutex);
+
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
 	return 0;
@@ -403,15 +413,21 @@ void * mou_paleta_ordinador(void * index)
 	int f_h;
 	int i;
 	char ind_pantalla;
-	// char rh,rv,rd;
 
 	// rang i: 			[0, 8]
 	i = (int) (intptr_t) index;
 	// rang char_index: [1, 9]
 	ind_pantalla = (char) (intptr_t) index + 1;
 
+	// TESTING***************************************************************
+	fprintf(stderr, "TEST\n");
+	exit(10);
+	// END_TESTING***********************************************************
+
 	do
 	{
+		pthread_mutex_lock(&mutex);
+
 		f_h = pVertical_pal_maq[i] + v_pal_maq[i]; // posicio hipotetica de la paleta
 		if (f_h != fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
 		{
@@ -442,6 +458,8 @@ void * mou_paleta_ordinador(void * index)
 		}
 		else
 			pVertical_pal_maq[i] += v_pal_maq[i]; // actualitza posicio vertical real de la paleta
+		
+		pthread_mutex_unlock(&mutex);
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
@@ -489,6 +507,8 @@ int main(int n_args, const char *ll_args[])
 
 	// Inicialitzacio de variables de threads
 	thread_output = -1;
+	pthread_mutex_init(&mutex, NULL);
+	pthread_mutex_unlock(&mutex);
 
 	//****************************** JOC ***********************************
 
@@ -509,11 +529,16 @@ int main(int n_args, const char *ll_args[])
 
 		sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: %i:%i", 
 			TEC_AMUNT, TEC_AVALL, t_partida_min, t_partida_s);
+
+		pthread_mutex_lock(&mutex);
 		win_escristr(strin);
+		pthread_mutex_unlock(&mutex);
 
 		win_retard(retard);
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
+
+	//***************************** FI DE JOC *******************************
 
 	// Espera a threads
 	pthread_join(taula_threads[10], (void *)(intptr_t) thread_output);
@@ -523,7 +548,8 @@ int main(int n_args, const char *ll_args[])
 
 	win_fi();
 
-	//***************************** FI DE JOC *******************************
+	pthread_mutex_destroy(&mutex);
+	
 	if (tecla == TEC_RETURN)
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
