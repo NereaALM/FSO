@@ -62,6 +62,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
 #include "winsuport.h"
 #include <pthread.h>
 
@@ -90,7 +91,6 @@ int fil_pal_usu;
 int col_pal_usu;
 
 // Posicio i velocitat maquina
-// TO DO: convertir en vectores
 int fil_pal_maq[MAX_PAL_MAQ];
 int col_pal_maq[MAX_PAL_MAQ];
 float pVertical_pal_maq[MAX_PAL_MAQ];
@@ -131,7 +131,8 @@ void carrega_parametres(const char *nom_fit, int num_pal_maq)
 {
 	FILE *fit;
 
-	fit = fopen(nom_fit, "rt"); // intenta obrir fitxer
+	// Obrir fitxer
+	fit = fopen(nom_fit, "rt"); 
 	if (fit == NULL)
 	{
 		fprintf(stderr, "No s'ha pogut obrir el fitxer \'%s\'\n", nom_fit);
@@ -176,6 +177,11 @@ void carrega_parametres(const char *nom_fit, int num_pal_maq)
 	{
 		if (!feof(fit))
 			fscanf(fit, "%d %d %f\n", &fil_pal_maq[i], &col_pal_maq[i], &v_pal_maq[i]);
+		else
+		{
+			fprintf(stderr, "Error: falten dades per inicialitzar les paletes a partir de l'index %i\n", i + 1);
+			exit(5);
+		}
 		if ((fil_pal_maq[i] < 1) || (fil_pal_maq[i] + long_pal > nFil_taulell - 2) ||
 			(col_pal_maq[i] < 5) || (col_pal_maq[i] > nCol_taulell - 2) ||
 			(v_pal_maq[i] < MIN_VEL) || (v_pal_maq[i] > MAX_VEL))
@@ -456,7 +462,7 @@ int main(int n_args, const char *ll_args[])
 	
 	// Nombre de paletes valid
 	num_pal_maq = atoi(ll_args[2]);
-	if (num_pal_maq <= MIN_PAL_MAQ && num_pal_maq >= MAX_PAL_MAQ)
+	if (num_pal_maq < MIN_PAL_MAQ || num_pal_maq > MAX_PAL_MAQ)
 	{
 		fprintf(stderr, "Parametre invalid: num_paletes fora de rang\n");
 		exit(1);
