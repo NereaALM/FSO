@@ -41,7 +41,7 @@
 //	compilat amb la llibreria 'curses':
 //
 //	$ gcc tennis2.c winsuport.o -o tennis2 -lcurses
-//	$ tennis2 fit_param num_paletes [retard]
+//	$ tennis2 fit_param [retard]
 //
 //	Codis de retorn:
 //	El programa retorna algun dels seguents codis al SO:
@@ -124,12 +124,14 @@ pthread_t taula_threads[MAX_THREADS];
 // 'nom_fit'; si es detecta algun problema, la funcio avorta l'execucio
 // enviant un missatge per la sortida d'error i retornant el codi per-
 // tinent al SO (segons comentaris del principi del programa).
-// Parametres d'entrada:
+// Input:
 // - nom_fitxer amb camp de joc
-// - numero de paletes de la maquina a inicialitzar
-void carrega_parametres(const char *nom_fit, int num_pal_maq)
+// Output:
+// - nombre de paletes de la maquina
+int carrega_parametres(const char * nom_fit)
 {
 	FILE *fit;
+	int num_pal_maq;
 
 	// Obrir fitxer
 	fit = fopen(nom_fit, "rt"); 
@@ -173,33 +175,38 @@ void carrega_parametres(const char *nom_fit, int num_pal_maq)
 	}
 
 	// Parametres paleta ordinador
-	for (int i = 0; i < num_pal_maq; i++)
+	num_pal_maq = 0;
+	while (!feof(fit))
 	{
-		if (!feof(fit))
-			fscanf(fit, "%d %d %f\n", &fil_pal_maq[i], &col_pal_maq[i], &v_pal_maq[i]);
-		else
-		{
-			fprintf(stderr, "Error: falten dades per inicialitzar les paletes a partir de l'index %i\n", i + 1);
-			exit(5);
-		}
-		if ((fil_pal_maq[i] < 1) || (fil_pal_maq[i] + long_pal > nFil_taulell - 2) ||
-			(col_pal_maq[i] < 5) || (col_pal_maq[i] > nCol_taulell - 2) ||
-			(v_pal_maq[i] < MIN_VEL) || (v_pal_maq[i] > MAX_VEL))
+		fscanf(fit, "%d %d %f\n", &fil_pal_maq[num_pal_maq], &col_pal_maq[num_pal_maq], &v_pal_maq[num_pal_maq]);
+		if ((fil_pal_maq[num_pal_maq] < 1) || (fil_pal_maq[num_pal_maq] + long_pal > nFil_taulell - 2) ||
+			(col_pal_maq[num_pal_maq] < 5) || (col_pal_maq[num_pal_maq] > nCol_taulell - 2) ||
+			(v_pal_maq[num_pal_maq] < MIN_VEL) || (v_pal_maq[num_pal_maq] > MAX_VEL))
 		{
 			fprintf(stderr, "Error: parametres paleta ordinador incorrectes:\n");
-			fprintf(stderr, "\t1 =< fil_pal_maq[i] (%d) =< nFil_taulell-long_pal-3 (%d)\n", fil_pal_maq[i],
+			fprintf(stderr, "\t1 =< fil_pal_maq[num_pal_maq] (%d) =< nFil_taulell-long_pal-3 (%d)\n", fil_pal_maq[num_pal_maq],
 					(nFil_taulell - long_pal - 3));
-			fprintf(stderr, "\t5 =< col_pal_maq[i] (%d) =< nCol_taulell-2 (%d)\n", col_pal_maq[i],
+			fprintf(stderr, "\t5 =< col_pal_maq[num_pal_maq] (%d) =< nCol_taulell-2 (%d)\n", col_pal_maq[num_pal_maq],
 					(nCol_taulell - 2));
-			fprintf(stderr, "\t%.1f =< v_pal_maq[i] (%.1f) =< %.1f\n", MIN_VEL, v_pal_maq[i], MAX_VEL);
+			fprintf(stderr, "\t%.1f =< v_pal_maq[num_pal_maq] (%.1f) =< %.1f\n", MIN_VEL, v_pal_maq[num_pal_maq], MAX_VEL);
 			fclose(fit);
 			exit(5);
 		}
+		num_pal_maq++;
 	}
 
-	fclose(fit); 
-	
+	// Nombre de paletes valid
+	if (num_pal_maq < MIN_PAL_MAQ || num_pal_maq > MAX_PAL_MAQ)
+	{
+		fprintf(stderr, "Error: nombre de paletes fora de rang\n");
+		exit(6);
+	}
+
+	fclose(fit);
+
 	// Fitxer carregat: tot OK!
+
+	return num_pal_maq;
 }
 
 // funcio per inicialitar les variables i visualitzar l'estat inicial del joc
@@ -211,7 +218,7 @@ int inicialitza_joc(int num_pal_maq)
 	int i_port;
 	int f_port;
 	int retwin;
-	int index_pantalla;
+	char index_pantalla;
 	char strin[51];
 
 	// Taulell
@@ -264,7 +271,7 @@ int inicialitza_joc(int num_pal_maq)
 		for (i = 0; i < long_pal; i++)
 		{
 			index_pantalla = n_paleta + 1;
-			win_escricar(fil_pal_maq[n_paleta] + i, col_pal_maq[n_paleta], index_pantalla, INVERS);
+			win_escricar(fil_pal_maq[n_paleta] + i, col_pal_maq[n_paleta], '0' + index_pantalla, INVERS);
 		}
 		pVertical_pal_maq[n_paleta] = fil_pal_maq[n_paleta]; // fixar valor real paleta ordinador
 	}
@@ -395,13 +402,13 @@ void * mou_paleta_ordinador(void * index)
 {
 	int f_h;
 	int i;
-	intptr_t ind_pantalla;
+	char ind_pantalla;
 	// char rh,rv,rd;
 
 	// rang i: 			[0, 8]
 	i = (int) (intptr_t) index;
 	// rang char_index: [1, 9]
-	ind_pantalla = (int) (intptr_t) index + 1;
+	ind_pantalla = (char) (intptr_t) index + 1;
 
 	do
 	{
@@ -415,7 +422,7 @@ void * mou_paleta_ordinador(void * index)
 					win_escricar(fil_pal_maq[i], col_pal_maq[i], ' ', NO_INV); // esborra primer bloc
 					pVertical_pal_maq[i] += v_pal_maq[i];
 					fil_pal_maq[i] = pVertical_pal_maq[i];									// actualitza posicio
-					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], ind_pantalla, INVERS); // impr. ultim bloc
+					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], '0' + ind_pantalla, INVERS); // impr. ultim bloc
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq[i] = -v_pal_maq[i];
@@ -427,7 +434,7 @@ void * mou_paleta_ordinador(void * index)
 					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], ' ', NO_INV); // esbo. ultim bloc
 					pVertical_pal_maq[i] += v_pal_maq[i];
 					fil_pal_maq[i] = pVertical_pal_maq[i];					 // actualitza posicio
-					win_escricar(fil_pal_maq[i], col_pal_maq[i], ind_pantalla, INVERS); // impr. primer bloc
+					win_escricar(fil_pal_maq[i], col_pal_maq[i], '0' + ind_pantalla, INVERS); // impr. primer bloc
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq[i] = -v_pal_maq[i];
@@ -447,7 +454,6 @@ void * mou_paleta_ordinador(void * index)
 
 int main(int n_args, const char *ll_args[])
 {
-	int num_threads;
 	int num_pal_maq;
 	
 	int thread_output;
@@ -462,26 +468,18 @@ int main(int n_args, const char *ll_args[])
 	//************* INICIALITZACIONS & CONTROL D'ERRORS ********************
 
 	// Nombre de parametres valid
-	if ((n_args != 3) && (n_args != 4))
+	if ((n_args != 2) && (n_args != 3))
 	{
 		fprintf(stderr, "Comanda: tennis2 fit_param num_paletes [retard]\n");
 		exit(1);
 	}
-	
-	// Nombre de paletes valid
-	num_pal_maq = atoi(ll_args[2]);
-	if (num_pal_maq < MIN_PAL_MAQ || num_pal_maq > MAX_PAL_MAQ)
-	{
-		fprintf(stderr, "Parametre invalid: num_paletes fora de rang\n");
-		exit(1);
-	}
 
 	// Carrega de parametres en base a fitxer de camp donat
-	carrega_parametres(ll_args[1], num_pal_maq);
+	num_pal_maq = carrega_parametres(ll_args[1]);
 
 	// Assignacio de temps de retard
-	if (n_args == 4)
-		retard = atoi(ll_args[3]);
+	if (n_args == 3)
+		retard = atoi(ll_args[2]);
 	else
 		retard = 100;
 
@@ -490,7 +488,6 @@ int main(int n_args, const char *ll_args[])
 		exit(4);
 
 	// Inicialitzacio de variables de threads
-	num_threads = num_pal_maq + 2;
 	thread_output = -1;
 
 	//****************************** JOC ***********************************
@@ -519,7 +516,9 @@ int main(int n_args, const char *ll_args[])
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
 	// Espera a threads
-	for (int i = 0; i < num_threads; i++)
+	pthread_join(taula_threads[10], (void *)(intptr_t) thread_output);
+	pthread_join(taula_threads[9], (void *)(intptr_t) thread_output);
+	for (int i = 0; i < num_pal_maq; i++)
 		pthread_join(taula_threads[i], (void *)(intptr_t) thread_output);
 
 	win_fi();
