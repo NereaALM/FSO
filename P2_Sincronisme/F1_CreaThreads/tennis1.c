@@ -450,6 +450,9 @@ int main(int n_args, const char *ll_args[])
 	int num_threads;
 	int num_pal_maq;
 	int thread_output;
+	time_t t_inicial, t_actual;
+	int t_partida_s, t_partida_min;
+	char strin[100];
 
 	//************* INICIALITZACIONS & CONTROL D'ERRORS ********************
 
@@ -481,7 +484,6 @@ int main(int n_args, const char *ll_args[])
 	if (inicialitza_joc(num_pal_maq) != 0)
 		exit(4);
 
-	
 	// Inicialitzacio de variables de threads
 	num_threads = num_pal_maq + 2;
 	thread_output = -1;
@@ -494,9 +496,19 @@ int main(int n_args, const char *ll_args[])
 	for (int i = 0; i < num_pal_maq; i++)
 		pthread_create(&taula_threads[i], NULL, mou_paleta_ordinador, (void *)(intptr_t) i);
 
+	// Temps de la partida
+	time(&t_inicial);
 	do
 	{
-		// TO DO: mostra temps de partida
+		time(&t_actual);
+		t_partida_s = difftime(t_actual, t_inicial);
+		t_partida_min = t_partida_s / 60;
+		t_partida_s = t_partida_s % 60;
+		
+		sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: %i:%i", 
+			TEC_AMUNT, TEC_AVALL, t_partida_min, t_partida_s);
+		win_escristr(strin);
+
 		win_retard(retard);
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
