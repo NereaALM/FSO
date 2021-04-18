@@ -1,6 +1,6 @@
 //**************************************************************************
 //
-//	Tennis1.c
+//	Tennis2.c
 //
 //	Programa inicial d'exemple per a les practiques 2 i 3 de ISO.
 //	Es tracta del joc del tennis: es dibuixa un camp de joc rectangular
@@ -40,8 +40,8 @@
 //	la pantalla (basada en CURSES); per tant, el programa necessita ser
 //	compilat amb la llibreria 'curses':
 //
-//	$ gcc tennis1.c winsuport.o -o tennis1 -lcurses
-//	$ tennis1 fit_param num_paletes [retard]
+//	$ gcc tennis2.c winsuport.o -o tennis2 -lcurses
+//	$ tennis2 fit_param num_paletes [retard]
 //
 //	Codis de retorn:
 //	El programa retorna algun dels seguents codis al SO:
@@ -464,7 +464,7 @@ int main(int n_args, const char *ll_args[])
 	// Nombre de parametres valid
 	if ((n_args != 3) && (n_args != 4))
 	{
-		fprintf(stderr, "Comanda: tennis1 fit_param num_paletes [retard]\n");
+		fprintf(stderr, "Comanda: tennis2 fit_param num_paletes [retard]\n");
 		exit(1);
 	}
 	
