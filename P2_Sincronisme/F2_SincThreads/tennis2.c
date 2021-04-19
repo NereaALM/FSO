@@ -78,7 +78,7 @@
 #define MAX_PAL_MAQ 9
 #define MAX_THREADS 11
 
-// Variables globals
+// ************************** Variables globals ******************************
 
 // Mides del camp i elements del joc
 int nFil_taulell;

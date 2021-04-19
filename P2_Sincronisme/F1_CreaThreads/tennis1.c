@@ -78,7 +78,7 @@
 #define MAX_PAL_MAQ 9
 #define MAX_THREADS 11
 
-// Variables globals
+// ************************** Variables globals ******************************
 
 // Mides del camp i elements del joc
 int nFil_taulell;
@@ -488,7 +488,7 @@ int main(int n_args, const char *ll_args[])
 		exit(4);
 
 	// Inicialitzacio de variables de threads
-	thread_output = -1;
+	thread_output = 0;
 
 	//****************************** JOC ***********************************
 
@@ -515,6 +515,8 @@ int main(int n_args, const char *ll_args[])
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
+	//***************************** FI DE JOC *******************************
+
 	// Espera a threads
 	pthread_join(taula_threads[10], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[9], (void *)(intptr_t) thread_output);
@@ -523,7 +525,6 @@ int main(int n_args, const char *ll_args[])
 
 	win_fi();
 
-	//***************************** FI DE JOC *******************************
 	if (tecla == TEC_RETURN)
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
