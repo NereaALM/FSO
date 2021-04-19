@@ -202,7 +202,7 @@ int carrega_parametres(const char * nom_fit)
 	if (num_pal_maq < MIN_PAL_MAQ || num_pal_maq > MAX_PAL_MAQ)
 	{
 		fprintf(stderr, "Error: nombre de paletes fora de rang\n");
-		exit(6);
+		exit(5);
 	}
 
 	fclose(fit);
@@ -539,7 +539,7 @@ int main(int n_args, const char *ll_args[])
 
 	// Creacio del taulell de joc
 	if (inicialitza_joc(num_pal_maq) != 0)
-		exit(4);
+		exit(6);
 
 	// Inicialitzacio de variables de threads
 	thread_output = 0;
