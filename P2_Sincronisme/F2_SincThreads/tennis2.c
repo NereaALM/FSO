@@ -54,6 +54,11 @@
 //	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)
 ///*************************************************************************
 
+// TESTING***************************************************************
+//fprintf(stderr, "TEST\n");
+//exit(10);
+// END_TESTING***********************************************************
+
 ///*************************************************************************
 // 	DEFINICIONS
 ///*************************************************************************
@@ -364,6 +369,8 @@ void * moure_pilota(void * cap)
 
 		pthread_mutex_unlock(&mutex);
 
+		win_retard(retard);
+
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
 	return 0;
@@ -376,7 +383,7 @@ void * mou_paleta_usuari(void * cap)
 	do
 	{
 		pthread_mutex_lock(&mutex);
-		
+
 		tecla = win_gettec();
 		if (tecla != 0)
 		{
@@ -395,6 +402,8 @@ void * mou_paleta_usuari(void * cap)
 		}
 
 		pthread_mutex_unlock(&mutex);
+
+		win_retard(retard);
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
@@ -418,11 +427,6 @@ void * mou_paleta_ordinador(void * index)
 	i = (int) (intptr_t) index;
 	// rang char_index: [1, 9]
 	ind_pantalla = (char) (intptr_t) index + 1;
-
-	// TESTING***************************************************************
-	fprintf(stderr, "TEST\n");
-	exit(10);
-	// END_TESTING***********************************************************
 
 	do
 	{
@@ -460,6 +464,8 @@ void * mou_paleta_ordinador(void * index)
 			pVertical_pal_maq[i] += v_pal_maq[i]; // actualitza posicio vertical real de la paleta
 		
 		pthread_mutex_unlock(&mutex);
+
+		win_retard(retard);
 
 	} while ((tecla != TEC_RETURN) && (cont == -1));
 
@@ -540,6 +546,7 @@ int main(int n_args, const char *ll_args[])
 
 	//***************************** FI DE JOC *******************************
 
+// TO DO: arreglar violació de segment aquí
 	// Espera a threads
 	pthread_join(taula_threads[10], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[9], (void *)(intptr_t) thread_output);
