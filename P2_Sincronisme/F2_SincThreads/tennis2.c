@@ -41,8 +41,9 @@
 //	compilat amb la llibreria 'curses':
 //
 //	$ gcc tennis2.c winsuport.o -o tennis2 -lcurses
-//	$ tennis2 fit_param [retard]
+//	$ tennis2 fit_param num_pilotes [retard]
 //
+// TO DO: Asignar correctament
 //	Codis de retorn:
 //	El programa retorna algun dels seguents codis al SO:
 //	0	==>	funcionament normal
@@ -113,9 +114,10 @@ float v_col_pilota_R;
 int retard;
 
 // Gestio de la partida
-// TO DO (opcional): inicialitzar tecla a 0 si C no ho fa
 int tecla;
-int cont;
+int num_pilotes;
+int gols_usuari;
+int gols_maquina;
 
 // Threads
 pthread_t taula_threads[MAX_THREADS];
@@ -123,7 +125,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 ///*************************************************************************
 // 	FUNCIONS
-//**************************************************************************
+///**************************************************************************
 
 // funcio per realitzar la carrega dels parametres de joc emmagatzemats
 // dins un fitxer de text, el nom del qual es passa per referencia en
@@ -309,17 +311,18 @@ void * moure_pilota(void * cap)
 	char rv;
 	char rd;
 
+// TO DO: reinici de pilota per la part central de la paleta de la porteria on s'ha marcat gol
 	do
 	{
 		pthread_mutex_lock(&mutex);
 
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
-		cont = -1; // inicialment suposem que la pilota no surt
 		rh = rv = rd = ' ';
 		if ((f_h != fil_pilota) || (c_h != col_pilota))
 		{						   // si posicio hipotetica no coincideix amb la pos. actual
-			if (f_h != fil_pilota) // provar rebot vertical
+			// provar rebot vertical
+			if (f_h != fil_pilota) 
 			{
 				rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
 				if (rv != ' ')					   // si no hi ha res
@@ -328,7 +331,8 @@ void * moure_pilota(void * cap)
 					f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
 			}
-			if (c_h != col_pilota) // provar rebot horitzontal
+			// provar rebot horitzontal
+			if (c_h != col_pilota) 
 			{
 				rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
 				if (rh != ' ')					   // si no hi ha res
@@ -337,7 +341,8 @@ void * moure_pilota(void * cap)
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
 			}
-			if ((f_h != fil_pilota) && (c_h != col_pilota)) // provar rebot diagonal
+			// provar rebot diagonal
+			if ((f_h != fil_pilota) && (c_h != col_pilota)) 
 			{
 				rd = win_quincar(f_h, c_h);
 				if (rd != ' ') // si no hi ha obstacle
@@ -348,7 +353,8 @@ void * moure_pilota(void * cap)
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
 				}
 			}
-			if (win_quincar(f_h, c_h) == ' ')					   // verificar posicio definitiva
+			// verificar posicio definitiva
+			if (win_quincar(f_h, c_h) == ' ')					   
 			{													   // si no hi ha obstacle
 				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
 				fil_pilota_R += v_fil_pilota_R;
@@ -357,8 +363,21 @@ void * moure_pilota(void * cap)
 				col_pilota = c_h;									   // actualitza posicio actual
 				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))  // si no surt
 					win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota
-				else
-					cont = col_pilota; // codi de finalitzacio de partida
+				else if (col_pilota <= 0)
+				{
+					gols_maquina++;
+					num_pilotes--;
+
+					// Inicialitzar pilota a porteria usuari
+				}
+				else if (col_pilota > nCol_taulell)
+				{
+					gols_usuari++;
+					num_pilotes--;
+
+					// Inicialitzar pilota a porteria maquina
+					
+				}
 			}
 		}
 		else
@@ -371,7 +390,7 @@ void * moure_pilota(void * cap)
 
 		win_retard(retard);
 
-	} while ((tecla != TEC_RETURN) && (cont == -1));
+	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
 
 	return 0;
 }
@@ -405,7 +424,7 @@ void * mou_paleta_usuari(void * cap)
 
 		win_retard(retard);
 
-	} while ((tecla != TEC_RETURN) && (cont == -1));
+	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
 
 	return 0;
 }
@@ -467,14 +486,14 @@ void * mou_paleta_ordinador(void * index)
 
 		win_retard(retard);
 
-	} while ((tecla != TEC_RETURN) && (cont == -1));
+	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
 
 	return 0;
 }
 
-//**************************************************************************
+///**************************************************************************
 // 	PRINCIPAL
-//**************************************************************************
+///**************************************************************************
 
 int main(int n_args, const char *ll_args[])
 {
@@ -492,7 +511,7 @@ int main(int n_args, const char *ll_args[])
 	//************* INICIALITZACIONS & CONTROL D'ERRORS ********************
 
 	// Nombre de parametres valid
-	if ((n_args != 2) && (n_args != 3))
+	if ((n_args != 3) && (n_args != 4))
 	{
 		fprintf(stderr, "Comanda: tennis2 fit_param num_paletes [retard]\n");
 		exit(1);
@@ -501,9 +520,17 @@ int main(int n_args, const char *ll_args[])
 	// Carrega de parametres en base a fitxer de camp donat
 	num_pal_maq = carrega_parametres(ll_args[1]);
 
+	// Nombre de pilotes de la partida
+	num_pilotes = atoi(ll_args[2]);
+	if (num_pilotes < 1)
+	{
+		fprintf(stderr, "Parametre incorrecte: Ha d'haver minim una pilota\n");
+		exit(1);
+	}
+
 	// Assignacio de temps de retard
-	if (n_args == 3)
-		retard = atoi(ll_args[2]);
+	if (n_args == 4)
+		retard = atoi(ll_args[3]);
 	else
 		retard = 100;
 
@@ -533,8 +560,8 @@ int main(int n_args, const char *ll_args[])
 		t_partida_min = t_partida_s / 60;
 		t_partida_s = t_partida_s % 60;
 
-		sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir. Temps: %i:%i", 
-			TEC_AMUNT, TEC_AVALL, t_partida_min, t_partida_s);
+		sprintf(strin, "Marcadors: %i:%i Pilotes: %i Temps: %i:%i", 
+				gols_maquina, gols_usuari, num_pilotes, t_partida_min, t_partida_s);
 
 		pthread_mutex_lock(&mutex);
 		win_escristr(strin);
@@ -542,7 +569,7 @@ int main(int n_args, const char *ll_args[])
 
 		win_retard(retard);
 
-	} while ((tecla != TEC_RETURN) && (cont == -1));
+	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
 
 	//***************************** FI DE JOC *******************************
 
@@ -560,10 +587,14 @@ int main(int n_args, const char *ll_args[])
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
 	{
-		if (cont == 0)
+		// TO DO: treure, es nomes per debugejar
+		printf("Marcadors: %i:%i Pilotes: %i Temps: %i:%i\n", 
+				gols_maquina, gols_usuari, num_pilotes, t_partida_min, t_partida_s);
+		if (gols_maquina > gols_usuari)
 			printf("Ha guanyat l'ordinador!\n");
-		else
+		else if (gols_maquina < gols_usuari)
 			printf("Ha guanyat l'usuari!\n");
+		else printf("Hi ha hagut un empat!\n");
 	}
 
 	return 0;
