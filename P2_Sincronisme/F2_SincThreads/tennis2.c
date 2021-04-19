@@ -55,11 +55,6 @@
 //	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)
 ///*************************************************************************
 
-// TESTING***************************************************************
-//fprintf(stderr, "TEST\n");
-//exit(10);
-// END_TESTING***********************************************************
-
 ///*************************************************************************
 // 	DEFINICIONS
 ///*************************************************************************
@@ -311,7 +306,6 @@ void * moure_pilota(void * cap)
 	char rv;
 	char rd;
 
-// TO DO: reinici de pilota per la part central de la paleta de la porteria on s'ha marcat gol
 	do
 	{
 		pthread_mutex_lock(&mutex);
@@ -362,13 +356,18 @@ void * moure_pilota(void * cap)
 				fil_pilota = f_h;
 				col_pilota = c_h;									   // actualitza posicio actual
 				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))  // si no surt
-					win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota
+					win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota			
 				else if (col_pilota <= 0)
 				{
 					gols_maquina++;
 					num_pilotes--;
 
 					// Inicialitzar pilota a porteria usuari
+					fil_pilota = fil_pal_usu + long_pal / 2;
+					col_pilota = col_pal_usu + 1;
+					fil_pilota_R = fil_pilota;
+					col_pilota_R = col_pilota;
+					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 				else if (col_pilota > nCol_taulell)
 				{
@@ -376,7 +375,11 @@ void * moure_pilota(void * cap)
 					num_pilotes--;
 
 					// Inicialitzar pilota a porteria maquina
-					
+					fil_pilota = fil_pal_maq[0] + long_pal / 2;
+					col_pilota = col_pal_maq[0] - 1;
+					fil_pilota_R = fil_pilota;
+					col_pilota_R = col_pilota;
+					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 			}
 		}
@@ -587,9 +590,6 @@ int main(int n_args, const char *ll_args[])
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
 	{
-		// TO DO: treure, es nomes per debugejar
-		printf("Marcadors: %i:%i Pilotes: %i Temps: %i:%i\n", 
-				gols_maquina, gols_usuari, num_pilotes, t_partida_min, t_partida_s);
 		if (gols_maquina > gols_usuari)
 			printf("Ha guanyat l'ordinador!\n");
 		else if (gols_maquina < gols_usuari)
