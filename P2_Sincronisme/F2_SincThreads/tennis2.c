@@ -512,7 +512,7 @@ int main(int n_args, const char *ll_args[])
 		exit(4);
 
 	// Inicialitzacio de variables de threads
-	thread_output = -1;
+	thread_output = 0;
 	pthread_mutex_init(&mutex, NULL);
 	pthread_mutex_unlock(&mutex);
 
@@ -546,7 +546,6 @@ int main(int n_args, const char *ll_args[])
 
 	//***************************** FI DE JOC *******************************
 
-// TO DO: arreglar violació de segment aquí
 	// Espera a threads
 	pthread_join(taula_threads[10], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[9], (void *)(intptr_t) thread_output);
