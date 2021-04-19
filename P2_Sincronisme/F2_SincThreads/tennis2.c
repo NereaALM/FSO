@@ -43,7 +43,6 @@
 //	$ gcc tennis2.c winsuport.o -o tennis2 -lcurses
 //	$ tennis2 fit_param num_pilotes [retard]
 //
-// TO DO: Asignar correctament
 //	Codis de retorn:
 //	El programa retorna algun dels seguents codis al SO:
 //	0	==>	funcionament normal
