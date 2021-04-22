@@ -1,0 +1,22 @@
+# Tunnel
+ssh -Nf deim1
+
+# Connect to server
+ssh localhost -p 8600 -l 21705896-Z
+
+# Directory creation
+mkdir FSO
+
+# Host to server
+scp fitxer 21705896-Z@bsd:FSO
+
+# Server to host
+scp 21705896-Z@bsd:FSO/fitxer 
+
+# Host to server F1
+scp tennis1.c winsuport.c winsuport.h Makefile camp1.txt camp2.txt camp3.txt camp4.txt camp5.txt  21705896-Z@bsd:FSO/F1_CreaThreads
+
+# Host to server F2
+scp tennis2.c winsuport.c winsuport.h Makefile camp1.txt camp2.txt camp3.txt camp4.txt camp5.txt  21705896-Z@bsd:FSO/F2_SincThreads
+
+
