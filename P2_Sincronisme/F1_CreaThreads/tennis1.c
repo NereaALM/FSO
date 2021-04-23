@@ -470,7 +470,7 @@ int main(int n_args, const char *ll_args[])
 	// Nombre de parametres valid
 	if ((n_args != 2) && (n_args != 3))
 	{
-		fprintf(stderr, "Comanda: tennis1 fit_param num_paletes [retard]\n");
+		fprintf(stderr, "Comanda: tennis1 fit_param num_pilotes [retard]\n");
 		exit(1);
 	}
 
