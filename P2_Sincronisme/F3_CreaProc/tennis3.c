@@ -55,25 +55,21 @@
 //	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)
 //**************************************************************************
 
-///*************************************************************************
-// 	DEFINICIONS
-///*************************************************************************
-
 #include "tennis3.h"
 
-// ************************** Variables globals ******************************
+///*************************************************************************
+// 	VARIABLES GLOBALS
+///*************************************************************************
 
-// TO DO: pasar globals a fitxer .h compartit entre tennis3 i pal_ord3
-// TO DO: afegir al Makefile el .h
-
-// Mides del camp i elements del joc
+// Parametres visuals
 int nFil_taulell;
 int nCol_taulell;
 int mida_porteria;
+int long_pal;
 
-// Posicio usuari
-int fil_pal_usu;
-int col_pal_usu;
+// Gestio de la partida
+int gols_usuari;
+int gols_maquina;
 
 // Posicio i velocitat pilota
 int fil_pilota;
@@ -83,16 +79,20 @@ float col_pilota_R;
 float v_fil_pilota_R;
 float v_col_pilota_R;
 
-// Gestio de la partida
-int gols_usuari;
-int gols_maquina;
-
-// Memoria compartida
-mem_compartida mem_comp;
+// Posicio usuari
+int fil_pal_usu;
+int col_pal_usu;
 
 // Threads
 pthread_t taula_threads[MAX_THREADS];
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Memoria compartida
+int id_taulell;
+int * p_taulell;
+int id_mem;
+mem_compartida * p_mem;
+mem_compartida mem_comp;
 
 // Processos
 pid_t pid_pal_maq[MAX_PAL_MAQ];
@@ -125,16 +125,16 @@ int carrega_parametres(const char * nom_fit)
 
 	// Llegir mides d'elements de joc
 	if (!feof(fit))
-		fscanf(fit, "%d %d %d %d\n", &nFil_taulell, &nCol_taulell, &mida_porteria, &mem_comp.long_pal);
+		fscanf(fit, "%d %d %d %d\n", &nFil_taulell, &nCol_taulell, &mida_porteria, &long_pal);
 	if ((nFil_taulell < MIN_FIL) || (nFil_taulell > MAX_FIL) ||
 		(nCol_taulell < MIN_COL) || (nCol_taulell > MAX_COL) || (mida_porteria < 0) ||
-		(mida_porteria > nFil_taulell - 3) || (mem_comp.long_pal < MIN_PAL) || (mem_comp.long_pal > nFil_taulell - 3))
+		(mida_porteria > nFil_taulell - 3) || (long_pal < MIN_PAL) || (long_pal > nFil_taulell - 3))
 	{
 		fprintf(stderr, "Error: dimensions del camp de joc incorrectes:\n");
 		fprintf(stderr, "\t%d =< nFil_taulell (%d) =< %d\n", MIN_FIL, nFil_taulell, MAX_FIL);
 		fprintf(stderr, "\t%d =< nCol_taulell (%d) =< %d\n", MIN_COL, nCol_taulell, MAX_COL);
 		fprintf(stderr, "\t0 =< mida_porteria (%d) =< nFil_taulell-3 (%d)\n", mida_porteria, (nFil_taulell - 3));
-		fprintf(stderr, "\t%d =< long_pal (%d) =< nFil_taulell-3 (%d)\n", MIN_PAL, mem_comp.long_pal, (nFil_taulell - 3));
+		fprintf(stderr, "\t%d =< long_pal (%d) =< nFil_taulell-3 (%d)\n", MIN_PAL, long_pal, (nFil_taulell - 3));
 		fclose(fit);
 		exit(3);
 	}
@@ -161,16 +161,16 @@ int carrega_parametres(const char * nom_fit)
 	while (!feof(fit))
 	{
 		fscanf(fit, "%d %d %f\n", &mem_comp.fil_pal_maq[num_pal_maq], &mem_comp.col_pal_maq[num_pal_maq], &mem_comp.v_pal_maq[num_pal_maq]);
-		if ((mem_comp.fil_pal_maq[num_pal_maq] < 1) || (mem_comp.fil_pal_maq[num_pal_maq] + mem_comp.long_pal > nFil_taulell - 2) ||
+		if ((mem_comp.fil_pal_maq[num_pal_maq] < 1) || (mem_comp.fil_pal_maq[num_pal_maq] + long_pal > nFil_taulell - 2) ||
 			(mem_comp.col_pal_maq[num_pal_maq] < 5) || (mem_comp.col_pal_maq[num_pal_maq] > nCol_taulell - 2) ||
 			(mem_comp.v_pal_maq[num_pal_maq] < MIN_VEL) || (mem_comp.v_pal_maq[num_pal_maq] > MAX_VEL))
 		{
 			fprintf(stderr, "Error: parametres paleta ordinador incorrectes:\n");
 			fprintf(stderr, "\t1 =< fil_pal_maq[num_pal_maq] (%d) =< nFil_taulell-long_pal-3 (%d)\n", mem_comp.fil_pal_maq[num_pal_maq],
-					(nFil_taulell - mem_comp.long_pal - 3));
+					(nFil_taulell - long_pal - 3));
 			fprintf(stderr, "\t5 =< col_pal_maq[num_pal_maq] (%d) =< nCol_taulell-2 (%d)\n", mem_comp.col_pal_maq[num_pal_maq],
 					(nCol_taulell - 2));
-			fprintf(stderr, "\t%.1f =< v_pal_maq[num_pal_maq] (%.1f) =< %.1f\n", MIN_VEL, mem_comp.v_pal_maq[num_pal_maq], MAX_VEL);
+			fprintf(stderr, "\t%.1f =< mem_comp.v_pal_maq[num_pal_maq] (%.1f) =< %.1f\n", MIN_VEL, mem_comp.v_pal_maq[num_pal_maq], MAX_VEL);
 			fclose(fit);
 			exit(5);
 		}
@@ -194,6 +194,8 @@ int carrega_parametres(const char * nom_fit)
 // funcio per inicialitar les variables i visualitzar l'estat inicial del joc
 // Parametres d'entrada:
 // - numero de paletes de la maquina a inicialitzar
+// Parametres de Sortida:
+// - resultat del win_ini: < 0 => error
 int inicialitza_joc(int num_pal_maq)
 {
 	int i;
@@ -205,6 +207,7 @@ int inicialitza_joc(int num_pal_maq)
 
 	// Taulell
 	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS); 
+
 	if (retwin < 0) // si no pot crear l'entorn de joc amb les curses
 	{
 		fprintf(stderr, "Error en la creacio del taulell de joc:\t");
@@ -223,8 +226,13 @@ int inicialitza_joc(int num_pal_maq)
 			fprintf(stderr, "no s'ha pogut crear la finestra!\n");
 			break;
 		}
-		return (retwin);
+
+		return retwin;
 	}
+
+	id_taulell = ini_mem(retwin);
+	p_taulell = map_mem(id_taulell);
+	win_set(p_taulell, nFil_taulell, nCol_taulell);
 
 	// Porteries
 	i_port = nFil_taulell / 2 - mida_porteria / 2; 
@@ -242,15 +250,15 @@ int inicialitza_joc(int num_pal_maq)
 	// Paleta usuari
 	fil_pal_usu = nFil_taulell / 2;
 	col_pal_usu = 3;
-	if (fil_pal_usu + mem_comp.long_pal >= nFil_taulell - 3)
+	if (fil_pal_usu + long_pal >= nFil_taulell - 3)
 		fil_pal_usu = 1;
-	for (i = 0; i < mem_comp.long_pal; i++)
+	for (i = 0; i < long_pal; i++)
 		win_escricar(fil_pal_usu + i, col_pal_usu, '0', INVERS); // dibuixar paleta inicialment
 
 	// Paletes ordinador
 	for(int n_paleta = 0; n_paleta < num_pal_maq; n_paleta++)
 	{
-		for (i = 0; i < mem_comp.long_pal; i++)
+		for (i = 0; i < long_pal; i++)
 		{
 			index_pantalla = n_paleta + 1;
 			win_escricar(mem_comp.fil_pal_maq[n_paleta] + i, mem_comp.col_pal_maq[n_paleta], '0' + index_pantalla, INVERS);
@@ -267,8 +275,8 @@ int inicialitza_joc(int num_pal_maq)
 	sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir.", 
 			TEC_AMUNT, TEC_AVALL);
 	win_escristr(strin);
-
-	return (0);
+	
+	return 0;
 }
 
 // funcio per moure la pilota; retorna un valor amb alguna d'aquestes
@@ -339,10 +347,10 @@ void * moure_pilota(void * cap)
 				else if (col_pilota <= 0)
 				{
 					gols_maquina++;
-					mem_comp.num_pilotes--;
+					p_mem->num_pilotes--;
 
 					// Inicialitzar pilota a porteria usuari
-					fil_pilota = fil_pal_usu + mem_comp.long_pal / 2;
+					fil_pilota = fil_pal_usu + long_pal / 2;
 					col_pilota = col_pal_usu + 1;
 					fil_pilota_R = fil_pilota;
 					col_pilota_R = col_pilota;
@@ -351,11 +359,11 @@ void * moure_pilota(void * cap)
 				else if (col_pilota > nCol_taulell)
 				{
 					gols_usuari++;
-					mem_comp.num_pilotes--;
+					p_mem->num_pilotes--;
 
 					// Inicialitzar pilota a porteria maquina
-					fil_pilota = mem_comp.fil_pal_maq[0] + mem_comp.long_pal / 2;
-					col_pilota = mem_comp.col_pal_maq[0] - 1;
+					fil_pilota = p_mem->fil_pal_maq[0] + long_pal / 2;
+					col_pilota = p_mem->col_pal_maq[0] - 1;
 					fil_pilota_R = fil_pilota;
 					col_pilota_R = col_pilota;
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
@@ -370,9 +378,9 @@ void * moure_pilota(void * cap)
 
 		pthread_mutex_unlock(&mutex);
 
-		win_retard(mem_comp.retard);
+		win_retard(p_mem->retard);
 
-	} while ((mem_comp.tecla != TEC_RETURN) && (mem_comp.num_pilotes > 0));
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
 
 	return 0;
 }
@@ -385,18 +393,18 @@ void * mou_paleta_usuari(void * cap)
 	{
 		pthread_mutex_lock(&mutex);
 
-		mem_comp.tecla = win_gettec();
-		if (mem_comp.tecla != 0)
+		p_mem->tecla = win_gettec();
+		if (p_mem->tecla != 0)
 		{
-			if ((mem_comp.tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + mem_comp.long_pal, col_pal_usu) == ' '))
+			if ((p_mem->tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
 				fil_pal_usu++;														// actualitza posicio
-				win_escricar(fil_pal_usu + mem_comp.long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
+				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
 			}
-			if ((mem_comp.tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
+			if ((p_mem->tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
-				win_escricar(fil_pal_usu + mem_comp.long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
+				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
 				fil_pal_usu--;														// actualitza posicio
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
 			}
@@ -404,9 +412,9 @@ void * mou_paleta_usuari(void * cap)
 
 		pthread_mutex_unlock(&mutex);
 
-		win_retard(mem_comp.retard);
+		win_retard(p_mem->retard);
 
-	} while ((mem_comp.tecla != TEC_RETURN) && (mem_comp.num_pilotes > 0));
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
 
 	return 0;
 }
@@ -417,19 +425,20 @@ void * mou_paleta_usuari(void * cap)
 
 int main(int n_args, const char *ll_args[])
 {
+	//********************** VARIABLES LOCALS *******************************
+
+	char strin[MAX_STRING];
+
 	time_t t_inicial;
 	time_t t_actual;
 	int t_partida_s;
 	int t_partida_min;
 
-	char strin[100];
-
 	int thread_output;
 
-	int id_mem;
-	mem_compartida * p_mem;
-
 	int num_pal_maq;
+	int i;
+	char args_proc[NUM_ARGS_PROC][MAX_STRING];
 
 	//************* INICIALITZACIONS & CONTROL D'ERRORS ********************
 
@@ -461,23 +470,49 @@ int main(int n_args, const char *ll_args[])
 	if (inicialitza_joc(num_pal_maq) != 0)
 		exit(6);
 
+	// Inicialització de zona de memoria per processos
+	id_mem = ini_mem(sizeof(mem_compartida));
+	p_mem = map_mem(id_mem);
+	p_mem->retard = mem_comp.retard;
+	p_mem->num_pilotes = mem_comp.num_pilotes;
+	for (i = 0; i < MAX_PAL_MAQ; i++)
+	{
+		p_mem->fil_pal_maq[i] = mem_comp.fil_pal_maq[i];
+		p_mem->col_pal_maq[i] = mem_comp.col_pal_maq[i];
+		p_mem->pVertical_pal_maq[i] = mem_comp.pVertical_pal_maq[i];
+		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
+	}
+
 	// Inicialitzacio de variables de threads
 	thread_output = 0;
 	pthread_mutex_init(&mutex, NULL);
 	pthread_mutex_unlock(&mutex);
 
-	// Inicialització de zona de memoria per processos
-	id_mem = ini_mem(sizeof(int));
-	p_mem = map_mem(id_mem);
-
-
 	//****************************** JOC ***********************************
+
+	// Preparació d'arguments per inicialitzar processos
+	sprintf(args_proc[1], "%i", nFil_taulell);
+	sprintf(args_proc[2], "%i", nCol_taulell);
+	sprintf(args_proc[3], "%i", long_pal);
+	sprintf(args_proc[4], "%i", id_taulell);
+	sprintf(args_proc[5], "%i", id_mem);
+
+	// Creació de processos
+	for (i = 0; i < num_pal_maq; i++)
+	{
+		pid_pal_maq[i] = fork();
+		if (pid_pal_maq[i] == (pid_t) 0)
+		{
+			sprintf(args_proc[0], "%i", i);
+			execlp(	args_proc[0], args_proc[1], args_proc[2], args_proc[3],
+					args_proc[4], args_proc[5], (char *) 0);
+			exit(0);
+		}
+	}
 
 	// Creacio de threads
 	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
 	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
-	
-	// TO DO: Crear processos pales maquina
 
 	// Temps de la partida
 	time(&t_inicial);
@@ -489,31 +524,36 @@ int main(int n_args, const char *ll_args[])
 		t_partida_s = t_partida_s % 60;
 
 		sprintf(strin, "Marcadors: %i:%i Pilotes: %i Temps: %i:%i", 
-				gols_maquina, gols_usuari, mem_comp.num_pilotes, t_partida_min, t_partida_s);
+				gols_maquina, gols_usuari, p_mem->num_pilotes, t_partida_min, t_partida_s);
 
 		pthread_mutex_lock(&mutex);
 		win_escristr(strin);
+		win_update();
 		pthread_mutex_unlock(&mutex);
 
-		win_retard(mem_comp.retard);
+		win_retard(p_mem->retard);
 
-	} while ((mem_comp.tecla != TEC_RETURN) && (mem_comp.num_pilotes > 0));
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
 
 	//***************************** FI DE JOC *******************************
 
 	// Espera a threads
 	pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
-	
-	// TO DO: Espera a processos de paletes de les maquines
+	pthread_mutex_destroy(&mutex);
 
+	// Espera a processos
+	for (i = 0; i < num_pal_maq; i++)
+		waitpid(pid_pal_maq[i], NULL);
+
+	// Alliberar recursos
+	elim_mem(id_taulell);
 	elim_mem(id_mem);
 
 	win_fi();
-
-	pthread_mutex_destroy(&mutex);
 	
-	if (mem_comp.tecla == TEC_RETURN)
+	// Mostra resultat per pantalla
+	if (p_mem->tecla == TEC_RETURN)
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
 	else
 	{

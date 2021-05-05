@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "tennis3.h": "c",
+        "pthread.h": "c"
+    }
+}

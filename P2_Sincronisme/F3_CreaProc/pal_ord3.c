@@ -1,13 +1,5 @@
-///*************************************************************************
-// 	DEFINICIONS
-///*************************************************************************
-
-#include "tennis3.h"
-
-///*************************************************************************
-// 	FUNCIONS
-///**************************************************************************
-
+//*************************************************************************
+//
 // funcio per moure la paleta de l'ordinador autonomament, en funcio de la
 // velocitat de la paleta (variable global v_pal_maq)
 // index serà un enter que indicara l’ordre de creació de la paleta
@@ -15,11 +7,25 @@
 //		1 -> segona paleta 	(2)
 //		...
 //		8 -> novena paleta 	(9)
-void * mou_paleta_ordinador(void * index)
+//
+//*************************************************************************
+
+#include "tennis3.h"
+
+///**************************************************************************
+// 	PRINCIPAL
+///**************************************************************************
+
+int main(int n_args, const char *ll_args[])
 {
 	int f_h;
+	
 	int i;
 	char ind_pantalla;
+
+	// Memoria compartida
+	int * p_taulell;
+	mem_compartida * p_mem;
 
 	// rang i: 			[0, 8]
 	i = (int) (intptr_t) index;
@@ -67,14 +73,5 @@ void * mou_paleta_ordinador(void * index)
 
 	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
 
-	return 0;
-}
-
-///**************************************************************************
-// 	PRINCIPAL
-///**************************************************************************
-
-int main(int n_args, const char *ll_args[])
-{
-	
+	return 0;	
 }
