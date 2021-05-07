@@ -53,6 +53,7 @@
 //	4	==>	parametres de la pilota incorrectes
 //	5	==>	parametres d'alguna de les paletes incorrectes
 //	6	==>	no s'ha pogut crear el camp de joc (no pot iniciar CURSES)
+//
 //**************************************************************************
 
 #include "tennis3.h"
@@ -195,7 +196,7 @@ int carrega_parametres(const char * nom_fit)
 // Parametres d'entrada:
 // - numero de paletes de la maquina a inicialitzar
 // Parametres de Sortida:
-// - resultat del win_ini: < 0 => error
+// - != 0 => error
 int inicialitza_joc(int num_pal_maq)
 {
 	int i;
@@ -488,14 +489,14 @@ int main(int n_args, const char *ll_args[])
 	pthread_mutex_init(&mutex, NULL);
 	pthread_mutex_unlock(&mutex);
 
-	//****************************** JOC ***********************************
-
 	// Preparació d'arguments per inicialitzar processos
 	sprintf(args_proc[1], "%i", nFil_taulell);
 	sprintf(args_proc[2], "%i", nCol_taulell);
 	sprintf(args_proc[3], "%i", long_pal);
 	sprintf(args_proc[4], "%i", id_taulell);
 	sprintf(args_proc[5], "%i", id_mem);
+
+	//****************************** JOC ***********************************
 
 	// Creació de processos
 	for (i = 0; i < num_pal_maq; i++)
@@ -544,7 +545,7 @@ int main(int n_args, const char *ll_args[])
 
 	// Espera a processos
 	for (i = 0; i < num_pal_maq; i++)
-		waitpid(pid_pal_maq[i], NULL);
+		waitpid(pid_pal_maq[i], 0, 0);
 
 	// Alliberar recursos
 	elim_mem(id_taulell);

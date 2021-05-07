@@ -5,16 +5,28 @@
 //
 //**************************************************************************
 
-// Llibreries
+//******************************* Llibreries********************************
+
+// Generals de C
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
-#include "memoria.h"
-#include "winsuport2.h"
+
+// Threads
 #include <pthread.h>
 
-// Limits de globals
+// Processos
+#include <sys/wait.h>
+#include <unistd.h>	
+
+// Memoria Compartida
+#include "memoria.h"
+
+// Pantalla
+#include "winsuport2.h"
+
+//*************************** Limits de globals *****************************
 #define MIN_FIL 7
 #define MAX_FIL 25
 #define MIN_COL 10
@@ -28,7 +40,7 @@
 #define NUM_ARGS_PROC 6
 #define MAX_STRING 100
 
-// Structs
+//****************************** Structs ************************************
 typedef struct
 {
 	// Gestio de la partida

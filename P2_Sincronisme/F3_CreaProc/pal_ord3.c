@@ -18,60 +18,85 @@
 
 int main(int n_args, const char *ll_args[])
 {
-	int f_h;
+	//***************** VARIABLES LOCALS DEL PROCÉS *************************
+
+	int fil_hipotetica;
+
+	// Parametres visuals
+	int nFil_taulell;
+	int nCol_taulell;
+	int long_pal;
 	
+	// Indexos
 	int i;
 	char ind_pantalla;
 
 	// Memoria compartida
+	int id_taulell;
 	int * p_taulell;
+	int id_mem;
 	mem_compartida * p_mem;
 
+	//************************** INICIALITZACIONS ****************************
+
+	// Carregar parametres d'entrada del procés en variables
+	
 	// rang i: 			[0, 8]
-	i = (int) (intptr_t) index;
+	i = atoi(ll_args[0]);
 	// rang char_index: [1, 9]
-	ind_pantalla = (char) (intptr_t) index + 1;
+	ind_pantalla = (char) i + 1;
+
+	nFil_taulell = atoi(ll_args[1]);
+	nCol_taulell = atoi(ll_args[2]);
+	long_pal = atoi(ll_args[3]);
+	id_taulell = atoi(ll_args[4]);
+	id_mem = atoi(ll_args[5]);
+
+	// Mapejar zona de memoria compartida
+	p_taulell = map_mem(id_taulell);
+	p_mem = map_mem(id_mem);
+
+	// Obtenir accés a la pantalla
+	win_set(p_taulell, nFil_taulell, nCol_taulell);
+
+	//****************************** JOC ***********************************
 
 	do
 	{
-		// TO DO: wait
-
-		f_h = pVertical_pal_maq[i] + v_pal_maq[i]; // posicio hipotetica de la paleta
-		if (f_h != fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
+		fil_hipotetica = p_mem->pVertical_pal_maq[i] + p_mem->v_pal_maq[i]; // posicio hipotetica de la paleta
+		if (fil_hipotetica != p_mem->fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
 		{
-			if (v_pal_maq[i] > 0.0) // verificar moviment cap avall
+			if (p_mem->v_pal_maq[i] > 0.0) // verificar moviment cap avall
 			{
-				if (win_quincar(f_h + long_pal - 1, col_pal_maq[i]) == ' ') // si no hi ha obstacle
+				if (win_quincar(fil_hipotetica + long_pal - 1, p_mem->col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
-					win_escricar(fil_pal_maq[i], col_pal_maq[i], ' ', NO_INV); // esborra primer bloc
-					pVertical_pal_maq[i] += v_pal_maq[i];
-					fil_pal_maq[i] = pVertical_pal_maq[i];									// actualitza posicio
-					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], '0' + ind_pantalla, INVERS); // impr. ultim bloc
+					win_escricar(p_mem->fil_pal_maq[i], p_mem->col_pal_maq[i], ' ', NO_INV); // esborra primer bloc
+					p_mem->pVertical_pal_maq[i] += p_mem->v_pal_maq[i];
+					p_mem->fil_pal_maq[i] = p_mem->pVertical_pal_maq[i];									// actualitza posicio
+					win_escricar(p_mem->fil_pal_maq[i] + long_pal - 1, p_mem->col_pal_maq[i], '0' + ind_pantalla, INVERS); // impr. ultim bloc
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
-					v_pal_maq[i] = -v_pal_maq[i];
+					p_mem->v_pal_maq[i] = -p_mem->v_pal_maq[i];
 			}
 			else // verificar moviment cap amunt
 			{
-				if (win_quincar(f_h, col_pal_maq[i]) == ' ') // si no hi ha obstacle
+				if (win_quincar(fil_hipotetica, p_mem->col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
-					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], ' ', NO_INV); // esbo. ultim bloc
-					pVertical_pal_maq[i] += v_pal_maq[i];
-					fil_pal_maq[i] = pVertical_pal_maq[i];					 // actualitza posicio
-					win_escricar(fil_pal_maq[i], col_pal_maq[i], '0' + ind_pantalla, INVERS); // impr. primer bloc
+					win_escricar(p_mem->fil_pal_maq[i] + long_pal - 1, p_mem->col_pal_maq[i], ' ', NO_INV); // esbo. ultim bloc
+					p_mem->pVertical_pal_maq[i] += p_mem->v_pal_maq[i];
+					p_mem->fil_pal_maq[i] = p_mem->pVertical_pal_maq[i];					 // actualitza posicio
+					win_escricar(p_mem->fil_pal_maq[i], p_mem->col_pal_maq[i], '0' + ind_pantalla, INVERS); // impr. primer bloc
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
-					v_pal_maq[i] = -v_pal_maq[i];
+					p_mem->v_pal_maq[i] = -p_mem->v_pal_maq[i];
 			}
 		}
 		else
-			pVertical_pal_maq[i] += v_pal_maq[i]; // actualitza posicio vertical real de la paleta
-		
-		// TO DO: signal
+			p_mem->pVertical_pal_maq[i] += p_mem->v_pal_maq[i]; // actualitza posicio vertical real de la paleta
 
-		win_retard(retard);
+		win_retard(p_mem->retard);
 
-	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
 
 	return 0;	
 }

@@ -1,4 +1,4 @@
-all : winsuport2.o tennis3 pal_ord3
+all : winsuport2.o memoria.o tennis3 pal_ord3
 
 #winsuport.o : winsuport.c winsuport.h
 #	gcc -Wall -c winsuport.c -o winsuport.o
@@ -15,11 +15,14 @@ all : winsuport2.o tennis3 pal_ord3
 winsuport2.o : winsuport2.c winsuport2.h
 	gcc -Wall -c winsuport2.c -o winsuport2.o
 
-tennis3 : tennis3.c winsuport2.o winsuport2.h
-	gcc tennis3.c winsuport2.o -o tennis3 -lcurses -lpthread
+memoria.o : memoria.c memoria.h
+	gcc -Wall -c memoria.c -o memoria.o
 
-pal_ord3 : pal_ord3.c winsuport2.o winsuport2.h
-	gcc pal_ord3.c winsuport2.o -o pal_ord3 -lcurses
+tennis3 : tennis3.c winsuport2.o winsuport2.h memoria.c memoria.h
+	gcc tennis3.c winsuport2.o memoria.o -o tennis3 -lcurses -lpthread
+
+pal_ord3 : pal_ord3.c winsuport2.o winsuport2.h memoria.c memoria.h
+	gcc pal_ord3.c winsuport2.o memoria.o -o pal_ord3 -lcurses
 
 clean: 
-	rm winsuport2.o tennis3 pal_ord3
+	rm winsuport2.o memoria.o tennis3 pal_ord3
