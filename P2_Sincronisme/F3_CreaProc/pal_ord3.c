@@ -1,5 +1,7 @@
 //*************************************************************************
 //
+// Pal_ord3.c
+//
 // funcio per moure la paleta de l'ordinador autonomament, en funcio de la
 // velocitat de la paleta (variable global v_pal_maq)
 // index serà un enter que indicara l’ordre de creació de la paleta
@@ -37,7 +39,7 @@ int main(int n_args, const char *ll_args[])
 	int id_mem;
 	mem_compartida * p_mem;
 
-	//************************** INICIALITZACIONS ****************************
+	//************ INICIALITZACIONS & CONTROL D'ERRORS ***********************
 
 	// Carregar parametres d'entrada del procés en variables
 	
@@ -54,7 +56,17 @@ int main(int n_args, const char *ll_args[])
 
 	// Mapejar zona de memoria compartida
 	p_taulell = map_mem(id_taulell);
+	if (p_taulell == (int *) -1)
+	{
+		fprintf(stderr, "P %c: error en identificador de memoria del taulell\n", ind_pantalla);
+		exit(0);
+	}
 	p_mem = map_mem(id_mem);
+	if (p_mem == (mem_compartida *) -1)
+	{
+		fprintf(stderr, "P %c: error en identificador de memoria de l'struct\n", ind_pantalla);
+		exit(0);
+	}
 
 	// Obtenir accés a la pantalla
 	win_set(p_taulell, nFil_taulell, nCol_taulell);

@@ -509,6 +509,7 @@ int main(int n_args, const char *ll_args[])
 			execlp("./pal_ord3", "pal_ord3", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
 					args_proc[4], args_proc[5], (char *) 0);
 			
+			fprintf(stderr,"Error: no puc executar el process fill\n");
 			exit(0);
 		}
 	}
@@ -545,7 +546,7 @@ int main(int n_args, const char *ll_args[])
 	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
 	pthread_mutex_destroy(&mutex);
 
-	// Espera a processos
+	// Espera a processos i comprova que ha anat bé
 	for (i = 0; i < num_pal_maq; i++)
 		waitpid(pid_pal_maq[i], 0, 0);
 
