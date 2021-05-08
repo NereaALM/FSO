@@ -18,10 +18,10 @@ memoria.o : memoria.c memoria.h
 #tennis2 : tennis2.c winsuport.o winsuport.h
 #	gcc -Wall tennis2.c winsuport.o -o tennis2 -lcurses -lpthread
 
-tennis3 : tennis3.c winsuport2.o winsuport2.h memoria.c memoria.h
+tennis3 : tennis3.c winsuport2.o winsuport2.h memoria.o memoria.h
 	gcc tennis3.c winsuport2.o memoria.o -o tennis3 -lcurses -lpthread
 
-pal_ord3 : pal_ord3.c winsuport2.o winsuport2.h memoria.c memoria.h
+pal_ord3 : pal_ord3.c winsuport2.o winsuport2.h memoria.o memoria.h
 	gcc pal_ord3.c winsuport2.o memoria.o -o pal_ord3 -lcurses
 
 clean: 

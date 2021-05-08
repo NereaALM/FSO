@@ -60,4 +60,7 @@ typedef struct
 	float pVertical_pal_maq[MAX_PAL_MAQ];
 	float v_pal_maq[MAX_PAL_MAQ];
 
+	// Sincronisme
+	int id_sem;
+
 } mem_compartida;

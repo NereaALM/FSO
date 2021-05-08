@@ -86,7 +86,9 @@ int col_pal_usu;
 
 // Threads
 pthread_t taula_threads[MAX_THREADS];
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Processos
+pid_t pid_pal_maq[MAX_PAL_MAQ];
 
 // Memoria compartida
 int id_taulell;
@@ -94,9 +96,6 @@ int * p_taulell;
 int id_mem;
 mem_compartida * p_mem;
 mem_compartida mem_comp;
-
-// Processos
-pid_t pid_pal_maq[MAX_PAL_MAQ];
 
 ///*************************************************************************
 // 	FUNCIONS
@@ -296,7 +295,7 @@ void * moure_pilota(void * cap)
 
 	do
 	{
-		pthread_mutex_lock(&mutex);
+		waitS(p_mem->id_sem);
 
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
@@ -377,7 +376,7 @@ void * moure_pilota(void * cap)
 			col_pilota_R += v_col_pilota_R;
 		}
 
-		pthread_mutex_unlock(&mutex);
+		signalS(p_mem->id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -392,7 +391,7 @@ void * mou_paleta_usuari(void * cap)
 {
 	do
 	{
-		pthread_mutex_lock(&mutex);
+		waitS(p_mem->id_sem);
 
 		p_mem->tecla = win_gettec();
 		if (p_mem->tecla != 0)
@@ -411,7 +410,7 @@ void * mou_paleta_usuari(void * cap)
 			}
 		}
 
-		pthread_mutex_unlock(&mutex);
+		signalS(p_mem->id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -483,11 +482,11 @@ int main(int n_args, const char *ll_args[])
 		p_mem->pVertical_pal_maq[i] = mem_comp.pVertical_pal_maq[i];
 		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
 	}
+	// Inicialitzem el semafor obert
+	p_mem->id_sem = ini_sem(1);
 
 	// Inicialitzacio de variables de threads
 	thread_output = 0;
-	pthread_mutex_init(&mutex, NULL);
-	pthread_mutex_unlock(&mutex);
 
 	// Preparació d'arguments per inicialitzar processos
 	sprintf(args_proc[1], "%i", nFil_taulell);
@@ -530,10 +529,10 @@ int main(int n_args, const char *ll_args[])
 		sprintf(strin, "Marcadors: %i:%i Pilotes: %i Temps: %i:%i", 
 				gols_maquina, gols_usuari, p_mem->num_pilotes, t_partida_min, t_partida_s);
 
-		pthread_mutex_lock(&mutex);
+		waitS(p_mem->id_sem);
 		win_escristr(strin);
 		win_update();
-		pthread_mutex_unlock(&mutex);
+		signalS(p_mem->id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -544,11 +543,13 @@ int main(int n_args, const char *ll_args[])
 	// Espera a threads
 	pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
-	pthread_mutex_destroy(&mutex);
 
 	// Espera a processos i comprova que ha anat bé
 	for (i = 0; i < num_pal_maq; i++)
 		waitpid(pid_pal_maq[i], 0, 0);
+
+	// Eliminar semafor
+	elim_sem(p_mem->id_sem);
 
 	// Alliberar recursos
 	elim_mem(id_taulell);

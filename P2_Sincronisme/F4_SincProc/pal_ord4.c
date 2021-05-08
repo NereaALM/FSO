@@ -75,6 +75,8 @@ int main(int n_args, const char *ll_args[])
 
 	do
 	{
+		waitS(p_mem->id_sem);
+
 		fil_hipotetica = p_mem->pVertical_pal_maq[i] + p_mem->v_pal_maq[i]; // posicio hipotetica de la paleta
 		if (fil_hipotetica != p_mem->fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
 		{
@@ -105,6 +107,8 @@ int main(int n_args, const char *ll_args[])
 		}
 		else
 			p_mem->pVertical_pal_maq[i] += p_mem->v_pal_maq[i]; // actualitza posicio vertical real de la paleta
+
+		signalS(p_mem->id_sem);
 
 		win_retard(p_mem->retard);
 
