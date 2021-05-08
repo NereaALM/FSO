@@ -1,4 +1,4 @@
-all : winsuport2.o memoria.o tennis4 pal_ord4
+all : winsuport2.o memoria.o semafor.o missatge.o tennis4 pal_ord4
 
 #winsuport.o : winsuport.c winsuport.h
 #	gcc -Wall -c winsuport.c -o winsuport.o
@@ -8,6 +8,12 @@ winsuport2.o : winsuport2.c winsuport2.h
 
 memoria.o : memoria.c memoria.h
 	gcc -Wall -c memoria.c -o memoria.o
+
+semafor.o : semafor.c semafor.h
+	gcc -Wall -c semafor.c -o semafor.o
+
+missatge.o : missatge.c missatge.h
+	gcc -Wall -c missatge.c -o missatge.o
 
 #tennis0 : tennis0.c winsuport.o winsuport.h
 #	gcc -Wall tennis0.c winsuport.o -o tennis0 -lcurses
@@ -24,11 +30,11 @@ memoria.o : memoria.c memoria.h
 #pal_ord3 : pal_ord3.c winsuport2.o winsuport2.h memoria.c memoria.h
 #	gcc pal_ord3.c winsuport2.o memoria.o -o pal_ord3 -lcurses
 
-tennis4 : tennis4.c winsuport2.o winsuport2.h memoria.c memoria.h
-	gcc tennis4.c winsuport2.o memoria.o -o tennis4 -lcurses -lpthread
+tennis4 : tennis4.c winsuport2.o winsuport2.h memoria.o memoria.h semafor.o semafor.h missatge.o missatge.h
+	gcc tennis4.c winsuport2.o memoria.o semafor.o missatge.o -o tennis4 -lcurses -lpthread
 
-pal_ord4 : pal_ord4.c winsuport2.o winsuport2.h memoria.c memoria.h
-	gcc pal_ord4.c winsuport2.o memoria.o -o pal_ord4 -lcurses
+pal_ord4 : pal_ord4.c winsuport2.o winsuport2.h memoria.o memoria.h semafor.o semafor.h missatge.o missatge.h
+	gcc pal_ord4.c winsuport2.o memoria.o semafor.o missatge.o  -o pal_ord4 -lcurses
 
 clean: 
-	rm winsuport2.o memoria.o tennis4 pal_ord4
+	rm winsuport2.o memoria.o semafor.o missatge.o tennis4 pal_ord4

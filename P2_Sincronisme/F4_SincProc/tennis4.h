@@ -15,6 +15,9 @@
 #include <stdint.h>
 #include <time.h>
 
+// Pantalla
+#include "winsuport2.h"
+
 // Threads
 #include <pthread.h>
 
@@ -25,8 +28,9 @@
 // Memoria Compartida
 #include "memoria.h"
 
-// Pantalla
-#include "winsuport2.h"
+// Sincronisme
+#include "semafor.h"
+#include "missatge.h"
 
 //*************************** Limits de globals *****************************
 #define MIN_FIL 7
