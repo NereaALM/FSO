@@ -44,15 +44,15 @@ int main(int n_args, const char *ll_args[])
 	// Carregar parametres d'entrada del procés en variables
 	
 	// rang i: 			[0, 8]
-	i = atoi(ll_args[0]);
+	i = atoi(ll_args[1]);
 	// rang char_index: [1, 9]
 	ind_pantalla = (char) i + 1;
 
-	nFil_taulell = atoi(ll_args[1]);
-	nCol_taulell = atoi(ll_args[2]);
-	long_pal = atoi(ll_args[3]);
-	id_taulell = atoi(ll_args[4]);
-	id_mem = atoi(ll_args[5]);
+	nFil_taulell = atoi(ll_args[2]);
+	nCol_taulell = atoi(ll_args[3]);
+	long_pal = atoi(ll_args[4]);
+	id_taulell = atoi(ll_args[5]);
+	id_mem = atoi(ll_args[6]);
 
 	// Mapejar zona de memoria compartida
 	p_taulell = map_mem(id_taulell);
