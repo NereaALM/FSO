@@ -39,20 +39,28 @@ int main(int n_args, const char *ll_args[])
 	int id_mem;
 	mem_compartida * p_mem;
 
+	// Sincronisme
+	int id_sem;
+
 	//************ INICIALITZACIONS & CONTROL D'ERRORS ***********************
 
 	// Carregar parametres d'entrada del procés en variables
-	
+
+	printf(	"PROCES: %s %s %s %s %s %s %s %s \n",
+			ll_args[0], ll_args[1], ll_args[2], ll_args[3],
+			ll_args[4], ll_args[5], ll_args[6], ll_args[7]);
+
 	// rang i: 			[0, 8]
-	i = atoi(ll_args[0]);
+	i = atoi(ll_args[1]);
 	// rang char_index: [1, 9]
 	ind_pantalla = (char) i + 1;
 
-	nFil_taulell = atoi(ll_args[1]);
-	nCol_taulell = atoi(ll_args[2]);
-	long_pal = atoi(ll_args[3]);
-	id_taulell = atoi(ll_args[4]);
-	id_mem = atoi(ll_args[5]);
+	nFil_taulell = atoi(ll_args[2]);
+	nCol_taulell = atoi(ll_args[3]);
+	long_pal = atoi(ll_args[4]);
+	id_taulell = atoi(ll_args[5]);
+	id_mem = atoi(ll_args[6]);
+	id_sem = atoi(ll_args[7]);
 
 	// Mapejar zona de memoria compartida
 	p_taulell = map_mem(id_taulell);
@@ -75,7 +83,7 @@ int main(int n_args, const char *ll_args[])
 
 	do
 	{
-		waitS(p_mem->id_sem);
+		waitS(id_sem);
 
 		fil_hipotetica = p_mem->pVertical_pal_maq[i] + p_mem->v_pal_maq[i]; // posicio hipotetica de la paleta
 		if (fil_hipotetica != p_mem->fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
@@ -108,7 +116,7 @@ int main(int n_args, const char *ll_args[])
 		else
 			p_mem->pVertical_pal_maq[i] += p_mem->v_pal_maq[i]; // actualitza posicio vertical real de la paleta
 
-		signalS(p_mem->id_sem);
+		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 

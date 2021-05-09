@@ -43,7 +43,7 @@
 #define MIN_PAL_MAQ 1
 #define MAX_PAL_MAQ 9
 #define MAX_THREADS 2
-#define NUM_ARGS_PROC 6
+#define NUM_ARGS_PROC 7
 #define MAX_STRING 100
 
 //****************************** Structs ************************************
@@ -59,8 +59,5 @@ typedef struct
 	int col_pal_maq[MAX_PAL_MAQ];
 	float pVertical_pal_maq[MAX_PAL_MAQ];
 	float v_pal_maq[MAX_PAL_MAQ];
-
-	// Sincronisme
-	int id_sem;
 
 } mem_compartida;

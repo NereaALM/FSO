@@ -97,6 +97,9 @@ int id_mem;
 mem_compartida * p_mem;
 mem_compartida mem_comp;
 
+// Sincronisme
+int id_sem;
+
 ///*************************************************************************
 // 	FUNCIONS
 ///**************************************************************************
@@ -295,7 +298,7 @@ void * moure_pilota(void * cap)
 
 	do
 	{
-		waitS(p_mem->id_sem);
+		waitS(id_sem);
 
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
@@ -376,7 +379,7 @@ void * moure_pilota(void * cap)
 			col_pilota_R += v_col_pilota_R;
 		}
 
-		signalS(p_mem->id_sem);
+		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -391,7 +394,7 @@ void * mou_paleta_usuari(void * cap)
 {
 	do
 	{
-		waitS(p_mem->id_sem);
+		waitS(id_sem);
 
 		p_mem->tecla = win_gettec();
 		if (p_mem->tecla != 0)
@@ -410,7 +413,7 @@ void * mou_paleta_usuari(void * cap)
 			}
 		}
 
-		signalS(p_mem->id_sem);
+		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -470,6 +473,9 @@ int main(int n_args, const char *ll_args[])
 	if (inicialitza_joc(num_pal_maq) != 0)
 		exit(6);
 
+	// Inicialitzacio de variables de threads
+	thread_output = 0;
+
 	// Inicialització de zona de memoria per processos
 	id_mem = ini_mem(sizeof(mem_compartida));
 	p_mem = map_mem(id_mem);
@@ -482,11 +488,6 @@ int main(int n_args, const char *ll_args[])
 		p_mem->pVertical_pal_maq[i] = mem_comp.pVertical_pal_maq[i];
 		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
 	}
-	// Inicialitzem el semafor obert
-	p_mem->id_sem = ini_sem(1);
-
-	// Inicialitzacio de variables de threads
-	thread_output = 0;
 
 	// Preparació d'arguments per inicialitzar processos
 	sprintf(args_proc[1], "%i", nFil_taulell);
@@ -494,6 +495,10 @@ int main(int n_args, const char *ll_args[])
 	sprintf(args_proc[3], "%i", long_pal);
 	sprintf(args_proc[4], "%i", id_taulell);
 	sprintf(args_proc[5], "%i", id_mem);
+	sprintf(args_proc[6], "%i", id_sem);
+
+	// Inicialitzem el semafor obert
+	id_sem = ini_sem(1);
 
 	//****************************** JOC ***********************************
 
@@ -505,16 +510,22 @@ int main(int n_args, const char *ll_args[])
 		if (pid_pal_maq[i] == (pid_t) 0)
 		{
 			sprintf(args_proc[0], "%i", i);
+
+			printf(	"PRINCIPAL: %s %s %s %s %s %s %s \n",
+			args_proc[0], args_proc[1], args_proc[2], args_proc[3],
+			args_proc[4], args_proc[5], args_proc[6]);
+
 			execlp("./pal_ord4", "pal_ord4", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
-					args_proc[4], args_proc[5], (char *) 0);
+					args_proc[4], args_proc[5], args_proc[6], (char *) 0);
 			
 			fprintf(stderr,"Error: no puc executar el process fill\n");
 			exit(0);
 		}
 	}
 
+	// TO DO: uncoment pthread create an join
 	// Creacio de threads
-	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
+	//pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
 	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
 
 	// Temps de la partida
@@ -529,10 +540,10 @@ int main(int n_args, const char *ll_args[])
 		sprintf(strin, "Marcadors: %i:%i Pilotes: %i Temps: %i:%i", 
 				gols_maquina, gols_usuari, p_mem->num_pilotes, t_partida_min, t_partida_s);
 
-		waitS(p_mem->id_sem);
+		waitS(id_sem);
 		win_escristr(strin);
 		win_update();
-		signalS(p_mem->id_sem);
+		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -541,7 +552,7 @@ int main(int n_args, const char *ll_args[])
 	//***************************** FI DE JOC *******************************
 
 	// Espera a threads
-	pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
+	//pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
 
 	// Espera a processos i comprova que ha anat bé
@@ -549,7 +560,7 @@ int main(int n_args, const char *ll_args[])
 		waitpid(pid_pal_maq[i], 0, 0);
 
 	// Eliminar semafor
-	elim_sem(p_mem->id_sem);
+	elim_sem(id_sem);
 
 	// Alliberar recursos
 	elim_mem(id_taulell);
