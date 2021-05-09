@@ -511,10 +511,6 @@ int main(int n_args, const char *ll_args[])
 		{
 			sprintf(args_proc[0], "%i", i);
 
-			printf(	"PRINCIPAL: %s %s %s %s %s %s %s \n",
-			args_proc[0], args_proc[1], args_proc[2], args_proc[3],
-			args_proc[4], args_proc[5], args_proc[6]);
-
 			execlp("./pal_ord4", "pal_ord4", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
 					args_proc[4], args_proc[5], args_proc[6], (char *) 0);
 			

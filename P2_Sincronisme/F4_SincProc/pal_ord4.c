@@ -46,10 +46,6 @@ int main(int n_args, const char *ll_args[])
 
 	// Carregar parametres d'entrada del procés en variables
 
-	printf(	"PROCES: %s %s %s %s %s %s %s %s \n",
-			ll_args[0], ll_args[1], ll_args[2], ll_args[3],
-			ll_args[4], ll_args[5], ll_args[6], ll_args[7]);
-
 	// rang i: 			[0, 8]
 	i = atoi(ll_args[1]);
 	// rang char_index: [1, 9]
@@ -80,7 +76,7 @@ int main(int n_args, const char *ll_args[])
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 
 	//****************************** JOC ***********************************
-
+	printf("TEST\n");
 	do
 	{
 		waitS(id_sem);
