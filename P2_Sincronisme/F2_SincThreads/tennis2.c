@@ -404,25 +404,29 @@ void * mou_paleta_usuari(void * cap)
 	do
 	{
 		pthread_mutex_lock(&mutex);
-
 		tecla = win_gettec();
+		pthread_mutex_unlock(&mutex);
+
 		if (tecla != 0)
 		{
+			pthread_mutex_lock(&mutex);
 			if ((tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
 				fil_pal_usu++;														// actualitza posicio
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
 			}
+			pthread_mutex_unlock(&mutex);
+			
+			pthread_mutex_lock(&mutex);
 			if ((tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
 				fil_pal_usu--;														// actualitza posicio
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
 			}
+			pthread_mutex_unlock(&mutex);
 		}
-
-		pthread_mutex_unlock(&mutex);
 
 		win_retard(retard);
 
@@ -458,6 +462,7 @@ void * mou_paleta_ordinador(void * index)
 		{
 			if (v_pal_maq[i] > 0.0) // verificar moviment cap avall
 			{
+
 				if (win_quincar(f_h + long_pal - 1, col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(fil_pal_maq[i], col_pal_maq[i], ' ', NO_INV); // esborra primer bloc
@@ -467,9 +472,11 @@ void * mou_paleta_ordinador(void * index)
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq[i] = -v_pal_maq[i];
+
 			}
 			else // verificar moviment cap amunt
 			{
+
 				if (win_quincar(f_h, col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], ' ', NO_INV); // esbo. ultim bloc
@@ -482,8 +489,9 @@ void * mou_paleta_ordinador(void * index)
 			}
 		}
 		else
+		{
 			pVertical_pal_maq[i] += v_pal_maq[i]; // actualitza posicio vertical real de la paleta
-		
+		}		
 		pthread_mutex_unlock(&mutex);
 
 		win_retard(retard);
