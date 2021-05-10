@@ -100,9 +100,6 @@ mem_compartida mem_comp;
 // Sincronisme
 int id_sem;
 
-// Comunicació
-int id_bustia;
-
 ///*************************************************************************
 // 	FUNCIONS
 ///**************************************************************************
@@ -301,6 +298,7 @@ void * moure_pilota(void * cap)
 
 	do
 	{
+		waitS(id_sem);
 
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
@@ -342,8 +340,6 @@ void * moure_pilota(void * cap)
 			// verificar posicio definitiva
 			if (win_quincar(f_h, c_h) == ' ')					   
 			{													   // si no hi ha obstacle
-				waitS(id_sem);
-
 				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
 				fil_pilota_R += v_fil_pilota_R;
 				col_pilota_R += v_col_pilota_R;
@@ -375,8 +371,6 @@ void * moure_pilota(void * cap)
 					col_pilota_R = col_pilota;
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
-
-				signalS(id_sem);
 			}
 		}
 		else
@@ -384,6 +378,8 @@ void * moure_pilota(void * cap)
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
 		}
+
+		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -399,32 +395,25 @@ void * mou_paleta_usuari(void * cap)
 	do
 	{
 		waitS(id_sem);
-		p_mem->tecla = win_gettec();
-		signalS(id_sem);
 
+		p_mem->tecla = win_gettec();
 		if (p_mem->tecla != 0)
 		{
 			if ((p_mem->tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
 			{
-				waitS(id_sem);
-
 				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
 				fil_pal_usu++;														// actualitza posicio
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
-
-				signalS(id_sem);
 			}
 			if ((p_mem->tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
-				waitS(id_sem);
-
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
 				fil_pal_usu--;														// actualitza posicio
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
-
-				signalS(id_sem);
 			}
 		}
+
+		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -487,12 +476,6 @@ int main(int n_args, const char *ll_args[])
 	// Inicialitzacio de variables de threads
 	thread_output = 0;
 
-	// Inicialitzem el semafor obert
-	id_sem = ini_sem(1);
-
-	// Inicialitzem la bustia IPC
-	id_bustia = ini_mis();
-
 	// Inicialització de zona de memoria per processos
 	id_mem = ini_mem(sizeof(mem_compartida));
 	p_mem = map_mem(id_mem);
@@ -513,7 +496,9 @@ int main(int n_args, const char *ll_args[])
 	sprintf(args_proc[4], "%i", id_taulell);
 	sprintf(args_proc[5], "%i", id_mem);
 	sprintf(args_proc[6], "%i", id_sem);
-	sprintf(args_proc[7], "%i", id_bustia);
+
+	// Inicialitzem el semafor obert
+	id_sem = ini_sem(1);
 
 	//****************************** JOC ***********************************
 
@@ -525,17 +510,18 @@ int main(int n_args, const char *ll_args[])
 		if (pid_pal_maq[i] == (pid_t) 0)
 		{
 			sprintf(args_proc[0], "%i", i);
+
 			execlp("./pal_ord4", "pal_ord4", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
-					args_proc[4], args_proc[5], args_proc[6], args_proc[7], (char *) 0);
+					args_proc[4], args_proc[5], args_proc[6], (char *) 0);
 			
-			// Cas d'error en creació de procés fill
 			fprintf(stderr,"Error: no puc executar el process fill\n");
 			exit(0);
 		}
 	}
 
+	// TO DO: uncoment pthread create an join
 	// Creacio de threads
-	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
+	//pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
 	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
 
 	// Temps de la partida
@@ -562,15 +548,12 @@ int main(int n_args, const char *ll_args[])
 	//***************************** FI DE JOC *******************************
 
 	// Espera a threads
-	pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
+	//pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
 
 	// Espera a processos i comprova que ha anat bé
 	for (i = 0; i < num_pal_maq; i++)
 		waitpid(pid_pal_maq[i], 0, 0);
-
-	// Eliminar bustia
-	elim_mis(id_bustia);
 
 	// Eliminar semafor
 	elim_sem(id_sem);
