@@ -301,7 +301,6 @@ void * moure_pilota(void * cap)
 
 	do
 	{
-		waitS(id_sem);
 
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
@@ -343,6 +342,8 @@ void * moure_pilota(void * cap)
 			// verificar posicio definitiva
 			if (win_quincar(f_h, c_h) == ' ')					   
 			{													   // si no hi ha obstacle
+				waitS(id_sem);
+
 				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
 				fil_pilota_R += v_fil_pilota_R;
 				col_pilota_R += v_col_pilota_R;
@@ -374,6 +375,8 @@ void * moure_pilota(void * cap)
 					col_pilota_R = col_pilota;
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
+
+				signalS(id_sem);
 			}
 		}
 		else
@@ -381,8 +384,6 @@ void * moure_pilota(void * cap)
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
 		}
-
-		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -398,25 +399,32 @@ void * mou_paleta_usuari(void * cap)
 	do
 	{
 		waitS(id_sem);
-
 		p_mem->tecla = win_gettec();
+		signalS(id_sem);
+
 		if (p_mem->tecla != 0)
 		{
 			if ((p_mem->tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
 			{
+				waitS(id_sem);
+
 				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
 				fil_pal_usu++;														// actualitza posicio
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
+
+				signalS(id_sem);
 			}
 			if ((p_mem->tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
+				waitS(id_sem);
+
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
 				fil_pal_usu--;														// actualitza posicio
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
+
+				signalS(id_sem);
 			}
 		}
-
-		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
