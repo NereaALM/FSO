@@ -307,8 +307,6 @@ void * moure_pilota(void * cap)
 
 	do
 	{
-		pthread_mutex_lock(&mutex);
-
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
 		rh = rv = rd = ' ';
@@ -317,26 +315,31 @@ void * moure_pilota(void * cap)
 			// provar rebot vertical
 			if (f_h != fil_pilota) 
 			{
+				pthread_mutex_lock(&mutex);
 				rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
 				if (rv != ' ')					   // si no hi ha res
 				{
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
+				pthread_mutex_unlock(&mutex);
 			}
 			// provar rebot horitzontal
 			if (c_h != col_pilota) 
 			{
+				pthread_mutex_lock(&mutex);
 				rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
 				if (rh != ' ')					   // si no hi ha res
 				{
 					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
+				pthread_mutex_unlock(&mutex);
 			}
 			// provar rebot diagonal
 			if ((f_h != fil_pilota) && (c_h != col_pilota)) 
 			{
+				pthread_mutex_lock(&mutex);
 				rd = win_quincar(f_h, c_h);
 				if (rd != ' ') // si no hi ha obstacle
 				{
@@ -345,7 +348,10 @@ void * moure_pilota(void * cap)
 					f_h = fil_pilota_R + v_fil_pilota_R;
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
 				}
+				pthread_mutex_unlock(&mutex);
 			}
+
+			pthread_mutex_lock(&mutex);
 			// verificar posicio definitiva
 			if (win_quincar(f_h, c_h) == ' ')					   
 			{													   // si no hi ha obstacle
@@ -381,14 +387,13 @@ void * moure_pilota(void * cap)
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 			}
+			pthread_mutex_unlock(&mutex);
 		}
 		else
 		{
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
 		}
-
-		pthread_mutex_unlock(&mutex);
 
 		win_retard(retard);
 
