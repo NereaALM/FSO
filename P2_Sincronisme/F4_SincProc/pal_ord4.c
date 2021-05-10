@@ -73,18 +73,19 @@ int main(int n_args, const char *ll_args[])
 	}
 
 	// Obtenir accés a la pantalla
+	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
+	signalS(id_sem);
 
 	//****************************** JOC ***********************************
 	do
 	{
-		waitS(id_sem);
-
 		fil_hipotetica = p_mem->pVertical_pal_maq[i] + p_mem->v_pal_maq[i]; // posicio hipotetica de la paleta
 		if (fil_hipotetica != p_mem->fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
 		{
 			if (p_mem->v_pal_maq[i] > 0.0) // verificar moviment cap avall
 			{
+				waitS(id_sem);
 				if (win_quincar(fil_hipotetica + long_pal - 1, p_mem->col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(p_mem->fil_pal_maq[i], p_mem->col_pal_maq[i], ' ', NO_INV); // esborra primer bloc
@@ -94,9 +95,11 @@ int main(int n_args, const char *ll_args[])
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					p_mem->v_pal_maq[i] = -p_mem->v_pal_maq[i];
+				signalS(id_sem);
 			}
 			else // verificar moviment cap amunt
 			{
+				waitS(id_sem);
 				if (win_quincar(fil_hipotetica, p_mem->col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(p_mem->fil_pal_maq[i] + long_pal - 1, p_mem->col_pal_maq[i], ' ', NO_INV); // esbo. ultim bloc
@@ -106,12 +109,15 @@ int main(int n_args, const char *ll_args[])
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					p_mem->v_pal_maq[i] = -p_mem->v_pal_maq[i];
+				signalS(id_sem);
 			}
 		}
 		else
+		{
+			waitS(id_sem);
 			p_mem->pVertical_pal_maq[i] += p_mem->v_pal_maq[i]; // actualitza posicio vertical real de la paleta
-
-		signalS(id_sem);
+			signalS(id_sem);
+		}
 
 		win_retard(p_mem->retard);
 

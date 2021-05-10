@@ -296,8 +296,6 @@ void * moure_pilota(void * cap)
 
 	do
 	{
-		pthread_mutex_lock(&mutex);
-
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
 		rh = rv = rd = ' ';
@@ -306,26 +304,31 @@ void * moure_pilota(void * cap)
 			// provar rebot vertical
 			if (f_h != fil_pilota) 
 			{
+				pthread_mutex_lock(&mutex);
 				rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
 				if (rv != ' ')					   // si no hi ha res
 				{
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
+				pthread_mutex_unlock(&mutex);
 			}
 			// provar rebot horitzontal
 			if (c_h != col_pilota) 
 			{
+				pthread_mutex_lock(&mutex);
 				rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
 				if (rh != ' ')					   // si no hi ha res
 				{
 					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
+				pthread_mutex_unlock(&mutex);
 			}
 			// provar rebot diagonal
 			if ((f_h != fil_pilota) && (c_h != col_pilota)) 
 			{
+				pthread_mutex_lock(&mutex);
 				rd = win_quincar(f_h, c_h);
 				if (rd != ' ') // si no hi ha obstacle
 				{
@@ -334,7 +337,10 @@ void * moure_pilota(void * cap)
 					f_h = fil_pilota_R + v_fil_pilota_R;
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
 				}
+				pthread_mutex_unlock(&mutex);
 			}
+
+			pthread_mutex_lock(&mutex);
 			// verificar posicio definitiva
 			if (win_quincar(f_h, c_h) == ' ')					   
 			{													   // si no hi ha obstacle
@@ -370,14 +376,13 @@ void * moure_pilota(void * cap)
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 			}
+			pthread_mutex_unlock(&mutex);
 		}
 		else
 		{
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
 		}
-
-		pthread_mutex_unlock(&mutex);
 
 		win_retard(p_mem->retard);
 
@@ -393,25 +398,29 @@ void * mou_paleta_usuari(void * cap)
 	do
 	{
 		pthread_mutex_lock(&mutex);
-
 		p_mem->tecla = win_gettec();
+		pthread_mutex_unlock(&mutex);
+
 		if (p_mem->tecla != 0)
 		{
+			pthread_mutex_lock(&mutex);
 			if ((p_mem->tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
 				fil_pal_usu++;														// actualitza posicio
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
 			}
+			pthread_mutex_unlock(&mutex);
+			
+			pthread_mutex_lock(&mutex);
 			if ((p_mem->tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
 				fil_pal_usu--;														// actualitza posicio
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
 			}
+			pthread_mutex_unlock(&mutex);
 		}
-
-		pthread_mutex_unlock(&mutex);
 
 		win_retard(p_mem->retard);
 

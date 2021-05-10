@@ -298,8 +298,6 @@ void * moure_pilota(void * cap)
 
 	do
 	{
-		waitS(id_sem);
-
 		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
 		c_h = col_pilota_R + v_col_pilota_R;
 		rh = rv = rd = ' ';
@@ -308,26 +306,31 @@ void * moure_pilota(void * cap)
 			// provar rebot vertical
 			if (f_h != fil_pilota) 
 			{
+				waitS(id_sem);
 				rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
 				if (rv != ' ')					   // si no hi ha res
 				{
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
+				signalS(id_sem);
 			}
 			// provar rebot horitzontal
 			if (c_h != col_pilota) 
 			{
+				waitS(id_sem);
 				rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
 				if (rh != ' ')					   // si no hi ha res
 				{
 					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
+				signalS(id_sem);
 			}
 			// provar rebot diagonal
 			if ((f_h != fil_pilota) && (c_h != col_pilota)) 
 			{
+				waitS(id_sem);
 				rd = win_quincar(f_h, c_h);
 				if (rd != ' ') // si no hi ha obstacle
 				{
@@ -336,7 +339,10 @@ void * moure_pilota(void * cap)
 					f_h = fil_pilota_R + v_fil_pilota_R;
 					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
 				}
+				signalS(id_sem);
 			}
+
+			waitS(id_sem);
 			// verificar posicio definitiva
 			if (win_quincar(f_h, c_h) == ' ')					   
 			{													   // si no hi ha obstacle
@@ -372,14 +378,13 @@ void * moure_pilota(void * cap)
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 			}
+			signalS(id_sem);
 		}
 		else
 		{
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
 		}
-
-		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
@@ -395,25 +400,29 @@ void * mou_paleta_usuari(void * cap)
 	do
 	{
 		waitS(id_sem);
-
 		p_mem->tecla = win_gettec();
+		signalS(id_sem);
+
 		if (p_mem->tecla != 0)
 		{
+			waitS(id_sem);
 			if ((p_mem->tecla == TEC_AVALL) && (win_quincar(fil_pal_usu + long_pal, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu, col_pal_usu, ' ', NO_INV);				// esborra primer bloc
 				fil_pal_usu++;														// actualitza posicio
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
 			}
+			signalS(id_sem);
+			
+			waitS(id_sem);
 			if ((p_mem->tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, ' ', NO_INV); // esborra ultim bloc
 				fil_pal_usu--;														// actualitza posicio
 				win_escricar(fil_pal_usu, col_pal_usu, '0', INVERS);				// imprimeix primer bloc
 			}
+			signalS(id_sem);
 		}
-
-		signalS(id_sem);
 
 		win_retard(p_mem->retard);
 
