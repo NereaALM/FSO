@@ -455,14 +455,12 @@ void * mou_paleta_ordinador(void * index)
 
 	do
 	{
-		pthread_mutex_lock(&mutex);
-
 		f_h = pVertical_pal_maq[i] + v_pal_maq[i]; // posicio hipotetica de la paleta
 		if (f_h != fil_pal_maq[i])				 // si pos. hipotetica no coincideix amb pos. actual
 		{
 			if (v_pal_maq[i] > 0.0) // verificar moviment cap avall
 			{
-
+				pthread_mutex_lock(&mutex);
 				if (win_quincar(f_h + long_pal - 1, col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(fil_pal_maq[i], col_pal_maq[i], ' ', NO_INV); // esborra primer bloc
@@ -472,11 +470,11 @@ void * mou_paleta_ordinador(void * index)
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq[i] = -v_pal_maq[i];
-
+				pthread_mutex_unlock(&mutex);
 			}
 			else // verificar moviment cap amunt
 			{
-
+				pthread_mutex_lock(&mutex);
 				if (win_quincar(f_h, col_pal_maq[i]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(fil_pal_maq[i] + long_pal - 1, col_pal_maq[i], ' ', NO_INV); // esbo. ultim bloc
@@ -486,14 +484,16 @@ void * mou_paleta_ordinador(void * index)
 				}
 				else // si hi ha obstacle, canvia el sentit del moviment
 					v_pal_maq[i] = -v_pal_maq[i];
+				pthread_mutex_unlock(&mutex);
 			}
 		}
 		else
 		{
+			pthread_mutex_lock(&mutex);
 			pVertical_pal_maq[i] += v_pal_maq[i]; // actualitza posicio vertical real de la paleta
+			pthread_mutex_unlock(&mutex);
 		}		
-		pthread_mutex_unlock(&mutex);
-
+		
 		win_retard(retard);
 
 	} while ((tecla != TEC_RETURN) && (num_pilotes > 0));
