@@ -100,6 +100,9 @@ mem_compartida mem_comp;
 // Sincronisme
 int id_sem;
 
+// Comunicació
+int id_bustia;
+
 ///*************************************************************************
 // 	FUNCIONS
 ///**************************************************************************
@@ -479,6 +482,9 @@ int main(int n_args, const char *ll_args[])
 	// Inicialitzem el semafor obert
 	id_sem = ini_sem(1);
 
+	// Inicialitzem la bustia IPC
+	id_bustia = ini_mis();
+
 	// Inicialització de zona de memoria per processos
 	id_mem = ini_mem(sizeof(mem_compartida));
 	p_mem = map_mem(id_mem);
@@ -499,6 +505,7 @@ int main(int n_args, const char *ll_args[])
 	sprintf(args_proc[4], "%i", id_taulell);
 	sprintf(args_proc[5], "%i", id_mem);
 	sprintf(args_proc[6], "%i", id_sem);
+	sprintf(args_proc[7], "%i", id_bustia);
 
 	//****************************** JOC ***********************************
 
@@ -511,7 +518,7 @@ int main(int n_args, const char *ll_args[])
 		{
 			sprintf(args_proc[0], "%i", i);
 			execlp("./pal_ord4", "pal_ord4", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
-					args_proc[4], args_proc[5], args_proc[6], (char *) 0);
+					args_proc[4], args_proc[5], args_proc[6], args_proc[7], (char *) 0);
 			
 			// Cas d'error en creació de procés fill
 			fprintf(stderr,"Error: no puc executar el process fill\n");
@@ -553,6 +560,9 @@ int main(int n_args, const char *ll_args[])
 	// Espera a processos i comprova que ha anat bé
 	for (i = 0; i < num_pal_maq; i++)
 		waitpid(pid_pal_maq[i], 0, 0);
+
+	// Eliminar bustia
+	elim_mis(id_bustia);
 
 	// Eliminar semafor
 	elim_sem(id_sem);

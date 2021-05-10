@@ -43,7 +43,7 @@
 #define MIN_PAL_MAQ 1
 #define MAX_PAL_MAQ 9
 #define MAX_THREADS 2
-#define NUM_ARGS_PROC 7
+#define NUM_ARGS_PROC 8
 #define MAX_STRING 100
 
 //****************************** Structs ************************************

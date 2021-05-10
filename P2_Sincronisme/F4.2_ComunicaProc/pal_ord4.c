@@ -42,6 +42,9 @@ int main(int n_args, const char *ll_args[])
 	// Sincronisme
 	int id_sem;
 
+	// Comunicació
+	int id_bustia;
+
 	//************ INICIALITZACIONS & CONTROL D'ERRORS ***********************
 
 	// Carregar parametres d'entrada del procés en variables
@@ -57,6 +60,7 @@ int main(int n_args, const char *ll_args[])
 	id_taulell = atoi(ll_args[5]);
 	id_mem = atoi(ll_args[6]);
 	id_sem = atoi(ll_args[7]);
+	id_bustia = atoi(ll_args[8]);
 
 	// Mapejar zona de memoria compartida
 	p_taulell = map_mem(id_taulell);
