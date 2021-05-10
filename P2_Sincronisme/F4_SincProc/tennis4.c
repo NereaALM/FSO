@@ -476,6 +476,9 @@ int main(int n_args, const char *ll_args[])
 	// Inicialitzacio de variables de threads
 	thread_output = 0;
 
+	// Inicialitzem el semafor obert
+	id_sem = ini_sem(1);
+
 	// Inicialització de zona de memoria per processos
 	id_mem = ini_mem(sizeof(mem_compartida));
 	p_mem = map_mem(id_mem);
@@ -497,9 +500,6 @@ int main(int n_args, const char *ll_args[])
 	sprintf(args_proc[5], "%i", id_mem);
 	sprintf(args_proc[6], "%i", id_sem);
 
-	// Inicialitzem el semafor obert
-	id_sem = ini_sem(1);
-
 	//****************************** JOC ***********************************
 
 	// Creació de processos
@@ -519,9 +519,8 @@ int main(int n_args, const char *ll_args[])
 		}
 	}
 
-	// TO DO: uncoment pthread create an join
 	// Creacio de threads
-	//pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
+	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
 	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
 
 	// Temps de la partida
@@ -548,7 +547,7 @@ int main(int n_args, const char *ll_args[])
 	//***************************** FI DE JOC *******************************
 
 	// Espera a threads
-	//pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
+	pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
 	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
 
 	// Espera a processos i comprova que ha anat bé

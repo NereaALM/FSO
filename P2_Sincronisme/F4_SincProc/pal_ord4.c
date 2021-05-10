@@ -76,7 +76,6 @@ int main(int n_args, const char *ll_args[])
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 
 	//****************************** JOC ***********************************
-	printf("TEST\n");
 	do
 	{
 		waitS(id_sem);
