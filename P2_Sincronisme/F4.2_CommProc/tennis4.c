@@ -290,67 +290,71 @@ int inicialitza_joc(int num_pal_maq)
 // cap no conte informacio
 void * moure_pilota(void * cap)
 {
-	int f_h;
-	int c_h;
-	char rh;
-	char rv;
-	char rd;
+	int fil_hipo;
+	int col_hipo;
+	char rebot_hori;
+	char rebot_vert;
+	char rebot_diag;
 
 	do
 	{
-		f_h = fil_pilota_R + v_fil_pilota_R; // posicio hipotetica de la pilota
-		c_h = col_pilota_R + v_col_pilota_R;
-		rh = rv = rd = ' ';
-		if ((f_h != fil_pilota) || (c_h != col_pilota))
-		{						   // si posicio hipotetica no coincideix amb la pos. actual
+		// posicio hipotetica de la pilota
+		fil_hipo = fil_pilota_R + v_fil_pilota_R; 
+		col_hipo = col_pilota_R + v_col_pilota_R;
+
+		rebot_hori = rebot_vert = rebot_diag = ' ';
+		
+		// si posicio hipotetica no coincideix amb la pos. actual
+		if ((fil_hipo != fil_pilota) || (col_hipo != col_pilota))
+		{	
 			// provar rebot vertical
-			if (f_h != fil_pilota) 
+			if (fil_hipo != fil_pilota) 
 			{
 				waitS(id_sem);
-				rv = win_quincar(f_h, col_pilota); // veure si hi ha algun obstacle
-				if (rv != ' ')					   // si no hi ha res
+				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
+				if (rebot_vert != ' ')					   // si no hi ha res
 				{
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
-					f_h = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
+					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
 				signalS(id_sem);
 			}
 			// provar rebot horitzontal
-			if (c_h != col_pilota) 
+			if (col_hipo != col_pilota) 
 			{
 				waitS(id_sem);
-				rh = win_quincar(fil_pilota, c_h); // veure si hi ha algun obstacle
-				if (rh != ' ')					   // si no hi ha res
+				rebot_hori = win_quincar(fil_pilota, col_hipo); // veure si hi ha algun obstacle
+				if (rebot_hori != ' ')					   // si no hi ha res
 				{
 					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
-					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
+					col_hipo = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
 				signalS(id_sem);
 			}
 			// provar rebot diagonal
-			if ((f_h != fil_pilota) && (c_h != col_pilota)) 
+			if ((fil_hipo != fil_pilota) && (col_hipo != col_pilota)) 
 			{
 				waitS(id_sem);
-				rd = win_quincar(f_h, c_h);
-				if (rd != ' ') // si no hi ha obstacle
+				rebot_diag = win_quincar(fil_hipo, col_hipo);
+				if (rebot_diag != ' ') // si no hi ha obstacle
 				{
 					v_fil_pilota_R = -v_fil_pilota_R;
 					v_col_pilota_R = -v_col_pilota_R; // canvia velocitats
-					f_h = fil_pilota_R + v_fil_pilota_R;
-					c_h = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
+					fil_hipo = fil_pilota_R + v_fil_pilota_R;
+					col_hipo = col_pilota_R + v_col_pilota_R; // actualitza posicio entera
 				}
 				signalS(id_sem);
 			}
 
 			waitS(id_sem);
 			// verificar posicio definitiva
-			if (win_quincar(f_h, c_h) == ' ')					   
+			if (win_quincar(fil_hipo, col_hipo) == ' ')					   
 			{													   // si no hi ha obstacle
 				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
 				fil_pilota_R += v_fil_pilota_R;
 				col_pilota_R += v_col_pilota_R;
-				fil_pilota = f_h;
-				col_pilota = c_h;									   // actualitza posicio actual
+				fil_pilota = fil_hipo;
+				col_pilota = col_hipo;									   // actualitza posicio actual
 				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))  // si no surt
 					win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota			
 				else if (col_pilota <= 0)
