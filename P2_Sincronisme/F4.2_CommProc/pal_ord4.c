@@ -72,6 +72,11 @@ int main(int n_args, const char *ll_args[])
 		exit(0);
 	}
 
+	// Inicialitzem la bústia del procés
+	waitS(id_sem);
+	p_mem->ids_busties[i] = ini_mis();
+	signalS(id_sem);
+
 	// Obtenir accés a la pantalla
 	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
@@ -123,5 +128,10 @@ int main(int n_args, const char *ll_args[])
 
 	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
 
-	return 0;	
+	// Eliminem la bústia del procés
+	waitS(id_sem);
+	elim_mis(p_mem->ids_busties[i]);
+	signalS(id_sem);
+
+	return 0;
 }

@@ -514,15 +514,15 @@ int main(int n_args, const char *ll_args[])
 	// Creació de processos
 	for (i = 0; i < num_pal_maq; i++)
 	{
+		// Creem el procés
 		pid_pal_maq[i] = fork();
-
 		if (pid_pal_maq[i] == (pid_t) 0)
 		{
 			sprintf(args_proc[0], "%i", i);
-
 			execlp("./pal_ord4", "pal_ord4", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
 					args_proc[4], args_proc[5], args_proc[6], (char *) 0);
 			
+			// Cas d'error
 			fprintf(stderr,"Error: no puc executar el process fill\n");
 			exit(0);
 		}

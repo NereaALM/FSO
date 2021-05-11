@@ -60,4 +60,7 @@ typedef struct
 	float pVertical_pal_maq[MAX_PAL_MAQ];
 	float v_pal_maq[MAX_PAL_MAQ];
 
+	// Comunicació amb busties IPC
+	int ids_busties[MAX_PAL_MAQ];
+
 } mem_compartida;
