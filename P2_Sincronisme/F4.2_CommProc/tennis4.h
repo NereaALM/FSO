@@ -45,6 +45,7 @@
 #define MAX_THREADS 2
 #define NUM_ARGS_PROC 7
 #define MAX_STRING 100
+#define MAX_MISS 1
 
 //****************************** Structs ************************************
 typedef struct

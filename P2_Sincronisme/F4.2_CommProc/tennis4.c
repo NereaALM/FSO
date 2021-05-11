@@ -68,10 +68,6 @@ int nCol_taulell;
 int mida_porteria;
 int long_pal;
 
-// Gestio de la partida
-int gols_usuari;
-int gols_maquina;
-
 // Posicio i velocitat pilota
 int fil_pilota;
 int col_pilota;
@@ -296,6 +292,9 @@ void * moure_pilota(void * cap)
 	char rebot_vert;
 	char rebot_diag;
 
+	// TO DO: quan hi ha xoc amb paleta
+	//sendM(win_quincar(fil_hipo, col_hipo), missatge, MAX_MISS);
+
 	do
 	{
 		// posicio hipotetica de la pilota
@@ -445,13 +444,19 @@ int main(int n_args, const char *ll_args[])
 
 	char strin[MAX_STRING];
 
+	// Control del temps de partida
 	time_t t_inicial;
 	time_t t_actual;
 	int t_partida_s;
 	int t_partida_min;
 
+	// Gestio de la partida
+	int gols_usuari;
+	int gols_maquina;
+
 	int thread_output;
 
+	// Per crear processos
 	int num_pal_maq;
 	int i;
 	char args_proc[NUM_ARGS_PROC][MAX_STRING];

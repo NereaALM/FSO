@@ -27,6 +27,9 @@ int long_pal;
 int ind;
 char ind_pantalla;
 
+// Threads
+pthread_t thread_consulta;
+
 // Memoria compartida
 int id_taulell;
 int * p_taulell;
@@ -40,6 +43,31 @@ int id_sem;
 // 	FUNCIONS
 ///**************************************************************************
 
+// Thread per
+void * consulta_bustia(void * cap)
+{
+	char missatge;
+	int long_miss; // [Bytes]
+
+	char elem_darrere;
+
+	do
+	{
+		long_miss = receiveM(p_mem->ids_busties[ind], missatge);
+
+		elem_darrere = win_quincar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind] + 1);
+		
+		if (elem_darrere == ' ')
+			// Moure cap a darrere
+		else if (elem_darrere == '.')
+			// Eliminar procés
+		else //sendM(win_quincar(fil_hipo, col_hipo), missatge, MAX_MISS);
+
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+
+	return 0;
+}
+
 ///**************************************************************************
 // 	PRINCIPAL
 ///**************************************************************************
@@ -49,6 +77,8 @@ int main(int n_args, const char *ll_args[])
 	//***************** VARIABLES LOCALS DEL PROCÉS *************************
 
 	int fil_hipotetica;
+
+	int thread_output;
 
 	//************ INICIALITZACIONS & CONTROL D'ERRORS ***********************
 
@@ -89,6 +119,9 @@ int main(int n_args, const char *ll_args[])
 	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 	signalS(id_sem);
+
+	// Creacio de thread per espera a missatges
+	pthread_create(&thread_consulta, NULL, consulta_bustia, NULL);
 
 	//****************************** JOC ***********************************
 	do
@@ -135,6 +168,11 @@ int main(int n_args, const char *ll_args[])
 		win_retard(p_mem->retard);
 
 	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+
+	//***************************** FI DE JOC *******************************
+
+	// Espera a thread de consulta de busties
+	pthread_join(thread_consulta, (void *)(intptr_t) thread_output);
 
 	// Eliminem la bústia del procés
 	waitS(id_sem);
