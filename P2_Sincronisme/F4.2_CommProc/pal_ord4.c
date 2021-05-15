@@ -46,28 +46,36 @@ int id_sem;
 // Thread per consultar si hi ha missatges nous
 void * consulta_bustia(void * cap)
 {
-	char missatge;
-
+	int id_bustia;
+	char hiha_xoc;
+	int long_miss;
 	char elem_darrere;
 
 	do
 	{
-		long_miss = receiveM(p_mem->ids_busties[ind], missatge);
+		long_miss = receiveM(p_mem->ids_busties[ind], hiha_xoc);
 
-		elem_darrere = win_quincar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind] + 1);
-		
-		if (elem_darrere == ' ')
+		if (long_miss == LONG_MISS && hiha_xoc == 1)
 		{
-			// Moure cap a darrere
+			elem_darrere = win_quincar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind] + 1);
+
+			// Condicions finals
+			if (elem_darrere == ' ')
+			{
+				// Moure cap a darrere
+			}
+			else if (elem_darrere == '.')
+			{
+				// Esborrar-te de pantalla i eliminar procés
+			}
+			
+			// Cas recursiu
+			else if (elem_darrere >= '1' && elem_darrere <= '9') 
+			{
+				id_bustia = atoi(elem_darrere) - 1;
+				sendM(id_bustia, hiha_xoc, LONG_MISS);
+			} 
 		}
-		else if (elem_darrere == '.')
-		{
-			// Eliminar procés
-		}
-		else
-		{
-			//sendM(win_quincar(fil_hipo, col_hipo), missatge, LONG_MISS);
-		} 
 
 		// TO DO: afegir retard?
 
