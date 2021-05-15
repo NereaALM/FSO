@@ -325,7 +325,6 @@ void * moure_pilota(void * cap)
 				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
 				if (rebot_vert != ' ')					   // si no hi ha res
 				{
-					rebot = 'v';
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}

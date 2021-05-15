@@ -52,7 +52,9 @@ void * consulta_bustia(void * cap)
 	int id_bustia;
 	char hiha_xoc;
 	int long_miss;
-	char elem_darrere;
+
+	char elem_darrere[long_pal];
+	int moviment;
 
 	int i;
 
@@ -62,29 +64,39 @@ void * consulta_bustia(void * cap)
 
 		if (long_miss == LONG_MISS && hiha_xoc == 1)
 		{
+			moviment = 0;
+
 			waitS(id_sem);
-			elem_darrere = win_quincar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind] + 1);
+			for (i = 0; i < long_pal; i++)
+			{
+				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + 1);
+
+				if (elem_darrere[i] == '.')
+					moviment = 1;
+				else if (elem_darrere[i] >= '1' && elem_darrere[i] <= '9')
+					moviment = 2;
+			}
 			signalS(id_sem);
 
 			// Condicions finals
 			// Moure paleta cap a darrere
-			if (elem_darrere == ' ')
+			if (moviment == 0)
 			{
 				waitS(id_sem);
 
 				// Esborrar paleta pos actual
-				for (i = p_mem->fil_pal_maq[ind]; i < p_mem->fil_pal_maq[ind] + long_pal; i++)
-					win_escricar(i, p_mem->col_pal_maq[ind], ' ', NO_INV);
+				for (i = 0; i < long_pal; i++)
+					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
 
 				// Escriure paleta nova posicio
 				p_mem->col_pal_maq[ind]++;
-				for (i = p_mem->fil_pal_maq[ind]; i < p_mem->fil_pal_maq[ind] + long_pal; i++)
-					win_escricar(i, p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS);
+				for (i = 0; i < long_pal; i++)
+					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS);
 
 				signalS(id_sem);
 			}
 			// Esborrar paleta de pantalla i eliminar procés
-			else if (elem_darrere == '.')
+			else if (moviment == 1)
 			{
 				// Esborrar paleta
 				waitS(id_sem);
@@ -97,11 +109,17 @@ void * consulta_bustia(void * cap)
 			}
 
 			// Cas recursiu
-			else if (elem_darrere >= '1' && elem_darrere <= '9') 
+			else if (moviment == 3)
 			{
-				// Transmets xoc
-				id_bustia = elem_darrere - 1;
-				sendM(id_bustia, &hiha_xoc, LONG_MISS);
+				// Transmets xoc a totes les paletes que hi hagi darrera
+				for (i = 0; i < long_pal; i++)
+				{
+					if (elem_darrere[i] >= '1' && elem_darrere[i] <= '9')
+					{
+						id_bustia = elem_darrere[i] - 1;
+						sendM(id_bustia, &hiha_xoc, LONG_MISS);
+					}
+				}
 			} 
 		}
 
@@ -118,7 +136,7 @@ int main(int n_args, const char *ll_args[])
 {
 	//***************** VARIABLES LOCALS DEL PROCÉS *************************
 
-	int fil_hipotetica;
+	int fil_hipo;
 
 	int thread_output;
 
@@ -157,12 +175,11 @@ int main(int n_args, const char *ll_args[])
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 	signalS(id_sem);
 
+	// La paleta en un inici es dins el taulell
 	es_dins = 1;
 
 	// Inicialitzem la bústia del procés
-	waitS(id_sem);
 	p_mem->ids_busties[ind] = ini_mis();
-	signalS(id_sem);
 
 	// Creacio de thread per espera a missatges
 	pthread_create(&thread_consulta, NULL, consulta_bustia, NULL);
@@ -170,13 +187,13 @@ int main(int n_args, const char *ll_args[])
 	//****************************** JOC ***********************************
 	do
 	{
-		fil_hipotetica = p_mem->pVertical_pal_maq[ind] + p_mem->v_pal_maq[ind]; // posicio hipotetica de la paleta
-		if (fil_hipotetica != p_mem->fil_pal_maq[ind])				 // si pos. hipotetica no coincideix amb pos. actual
+		fil_hipo = p_mem->pVertical_pal_maq[ind] + p_mem->v_pal_maq[ind]; // posicio hipotetica de la paleta
+		if (fil_hipo != p_mem->fil_pal_maq[ind])				 // si pos. hipotetica no coincideix amb pos. actual
 		{
 			if (p_mem->v_pal_maq[ind] > 0.0) // verificar moviment cap avall
 			{
 				waitS(id_sem);
-				if (win_quincar(fil_hipotetica + long_pal - 1, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
+				if (win_quincar(fil_hipo + long_pal - 1, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind], ' ', NO_INV); // esborra primer bloc
 					p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind];
@@ -190,7 +207,7 @@ int main(int n_args, const char *ll_args[])
 			else // verificar moviment cap amunt
 			{
 				waitS(id_sem);
-				if (win_quincar(fil_hipotetica, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
+				if (win_quincar(fil_hipo, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
 				{
 					win_escricar(p_mem->fil_pal_maq[ind] + long_pal - 1, p_mem->col_pal_maq[ind], ' ', NO_INV); // esbo. ultim bloc
 					p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind];
@@ -219,9 +236,7 @@ int main(int n_args, const char *ll_args[])
 	pthread_join(thread_consulta, (void *)(intptr_t) thread_output);
 
 	// Eliminem la bústia del procés
-	waitS(id_sem);
 	elim_mis(p_mem->ids_busties[ind]);
-	signalS(id_sem);
 
 	return 0;
 }
