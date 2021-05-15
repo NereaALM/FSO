@@ -43,11 +43,10 @@ int id_sem;
 // 	FUNCIONS
 ///**************************************************************************
 
-// Thread per
+// Thread per consultar si hi ha missatges nous
 void * consulta_bustia(void * cap)
 {
 	char missatge;
-	int long_miss; // [Bytes]
 
 	char elem_darrere;
 
@@ -58,10 +57,19 @@ void * consulta_bustia(void * cap)
 		elem_darrere = win_quincar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind] + 1);
 		
 		if (elem_darrere == ' ')
+		{
 			// Moure cap a darrere
+		}
 		else if (elem_darrere == '.')
+		{
 			// Eliminar procés
-		else //sendM(win_quincar(fil_hipo, col_hipo), missatge, MAX_MISS);
+		}
+		else
+		{
+			//sendM(win_quincar(fil_hipo, col_hipo), missatge, LONG_MISS);
+		} 
+
+		// TO DO: afegir retard?
 
 	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
 
@@ -110,14 +118,14 @@ int main(int n_args, const char *ll_args[])
 		exit(0);
 	}
 
-	// Inicialitzem la bústia del procés
-	waitS(id_sem);
-	p_mem->ids_busties[ind] = ini_mis();
-	signalS(id_sem);
-
 	// Obtenir accés a la pantalla
 	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
+	signalS(id_sem);
+
+	// Inicialitzem la bústia del procés
+	waitS(id_sem);
+	p_mem->ids_busties[ind] = ini_mis();
 	signalS(id_sem);
 
 	// Creacio de thread per espera a missatges

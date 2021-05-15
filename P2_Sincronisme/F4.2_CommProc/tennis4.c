@@ -76,6 +76,10 @@ float col_pilota_R;
 float v_fil_pilota_R;
 float v_col_pilota_R;
 
+// Gestio de la partida
+int gols_usuari;
+int gols_maquina;
+
 // Posicio usuari
 int fil_pal_usu;
 int col_pal_usu;
@@ -286,26 +290,34 @@ int inicialitza_joc(int num_pal_maq)
 // cap no conte informacio
 void * moure_pilota(void * cap)
 {
+	// Moviments
 	int fil_hipo;
 	int col_hipo;
 	char rebot_hori;
 	char rebot_vert;
 	char rebot_diag;
 
-	// TO DO: quan hi ha xoc amb paleta
-	//sendM(win_quincar(fil_hipo, col_hipo), missatge, MAX_MISS);
+	// Missatges / Xocs
+	char rebot;
+	char hiha_xoc;
+	int id_bustia;
 
+	// Joc
 	do
 	{
-		// posicio hipotetica de la pilota
-		fil_hipo = fil_pilota_R + v_fil_pilota_R; 
-		col_hipo = col_pilota_R + v_col_pilota_R;
-
+		// Condicions inicials
+		hiha_xoc = 0;
+		rebot = 0;
 		rebot_hori = rebot_vert = rebot_diag = ' ';
+
+		// Calcul de posicio hipotetica de la pilota
+		fil_hipo = fil_pilota_R + v_fil_pilota_R;
+		col_hipo = col_pilota_R + v_col_pilota_R;
 		
-		// si posicio hipotetica no coincideix amb la pos. actual
+		// Posicio hipotetica != pos. actual => Moviment
 		if ((fil_hipo != fil_pilota) || (col_hipo != col_pilota))
 		{	
+			// Decidir moviment
 			// provar rebot vertical
 			if (fil_hipo != fil_pilota) 
 			{
@@ -313,6 +325,7 @@ void * moure_pilota(void * cap)
 				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
 				if (rebot_vert != ' ')					   // si no hi ha res
 				{
+					rebot = 'v';
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
@@ -325,6 +338,7 @@ void * moure_pilota(void * cap)
 				rebot_hori = win_quincar(fil_pilota, col_hipo); // veure si hi ha algun obstacle
 				if (rebot_hori != ' ')					   // si no hi ha res
 				{
+					rebot = 'h';
 					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
 					col_hipo = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
@@ -337,6 +351,7 @@ void * moure_pilota(void * cap)
 				rebot_diag = win_quincar(fil_hipo, col_hipo);
 				if (rebot_diag != ' ') // si no hi ha obstacle
 				{
+					rebot = 'd';
 					v_fil_pilota_R = -v_fil_pilota_R;
 					v_col_pilota_R = -v_col_pilota_R; // canvia velocitats
 					fil_hipo = fil_pilota_R + v_fil_pilota_R;
@@ -345,17 +360,25 @@ void * moure_pilota(void * cap)
 				signalS(id_sem);
 			}
 
+			// Moure
 			waitS(id_sem);
-			// verificar posicio definitiva
 			if (win_quincar(fil_hipo, col_hipo) == ' ')					   
-			{													   // si no hi ha obstacle
-				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); // esborra pilota
+			{													   
+				// Esborrar pilota vella
+				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); 
+				
+				// Actualitzar floats de posició amb velocitats
 				fil_pilota_R += v_fil_pilota_R;
 				col_pilota_R += v_col_pilota_R;
+
+				// Escriure pilota actual
 				fil_pilota = fil_hipo;
-				col_pilota = col_hipo;									   // actualitza posicio actual
-				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))  // si no surt
-					win_escricar(fil_pilota, col_pilota, '.', INVERS); // imprimeix pilota			
+				col_pilota = col_hipo;
+
+				// Pilota dins el taulell								
+				if ((col_pilota > 0) && (col_pilota <= nCol_taulell)) 
+					win_escricar(fil_pilota, col_pilota, '.', INVERS); 		
+				// Pilota fora del taulell => GOL
 				else if (col_pilota <= 0)
 				{
 					gols_maquina++;
@@ -383,10 +406,44 @@ void * moure_pilota(void * cap)
 			}
 			signalS(id_sem);
 		}
+		// Si la fila i la columna hipotetiques son iguals a les actuals
 		else
 		{
+			// Actualitzar floats de posició amb velocitats
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
+		}
+
+		// Condició de XOC amb paleta
+		switch (rebot)
+		{
+		case 'v':
+			if (rebot_vert >= '1' && rebot_vert <= '9') 
+			{
+				hiha_xoc = 1;
+				id_bustia = atoi(rebot_vert) - 1;
+				sendM(id_bustia, hiha_xoc, LONG_MISS);
+			}
+			break;
+		case 'h':
+			if (rebot_hori >= '1' && rebot_hori <= '9') 
+			{
+				hiha_xoc = 1;
+				id_bustia = atoi(rebot_hori) - 1;
+				sendM(id_bustia, hiha_xoc, LONG_MISS);
+			}
+			break;
+		case 'd':
+			if (rebot_diag >= '1' && rebot_diag <= '9') 
+			{
+				hiha_xoc = 1;
+				id_bustia = atoi(rebot_diag) - 1;
+				sendM(id_bustia, hiha_xoc, LONG_MISS);
+			}
+			break;
+		default:
+			// No hi ha rebot
+			break;
 		}
 
 		win_retard(p_mem->retard);
@@ -449,10 +506,6 @@ int main(int n_args, const char *ll_args[])
 	time_t t_actual;
 	int t_partida_s;
 	int t_partida_min;
-
-	// Gestio de la partida
-	int gols_usuari;
-	int gols_maquina;
 
 	int thread_output;
 
