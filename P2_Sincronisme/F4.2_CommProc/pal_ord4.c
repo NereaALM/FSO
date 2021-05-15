@@ -23,6 +23,9 @@ int nFil_taulell;
 int nCol_taulell;
 int long_pal;
 
+// Gestió de la partida
+int es_dins;
+
 // Indexos
 int ind;
 char ind_pantalla;
@@ -51,35 +54,58 @@ void * consulta_bustia(void * cap)
 	int long_miss;
 	char elem_darrere;
 
+	int i;
+
 	do
 	{
-		long_miss = receiveM(p_mem->ids_busties[ind], hiha_xoc);
+		long_miss = receiveM(p_mem->ids_busties[ind], &hiha_xoc);
 
 		if (long_miss == LONG_MISS && hiha_xoc == 1)
 		{
+			waitS(id_sem);
 			elem_darrere = win_quincar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind] + 1);
+			signalS(id_sem);
 
 			// Condicions finals
+			// Moure paleta cap a darrere
 			if (elem_darrere == ' ')
 			{
-				// Moure cap a darrere
+				waitS(id_sem);
+
+				// Esborrar paleta pos actual
+				for (i = p_mem->fil_pal_maq[ind]; i < p_mem->fil_pal_maq[ind] + long_pal; i++)
+					win_escricar(i, p_mem->col_pal_maq[ind], ' ', NO_INV);
+
+				// Escriure paleta nova posicio
+				p_mem->col_pal_maq[ind]++;
+				for (i = p_mem->fil_pal_maq[ind]; i < p_mem->fil_pal_maq[ind] + long_pal; i++)
+					win_escricar(i, p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS);
+
+				signalS(id_sem);
 			}
+			// Esborrar paleta de pantalla i eliminar procés
 			else if (elem_darrere == '.')
 			{
-				// Esborrar-te de pantalla i eliminar procés
+				// Esborrar paleta
+				waitS(id_sem);
+				for (i = p_mem->fil_pal_maq[ind]; i < p_mem->fil_pal_maq[ind] + long_pal; i++)
+					win_escricar(i, p_mem->col_pal_maq[ind], ' ', NO_INV);
+				
+				// Acaba procés
+				es_dins = 0;
+				signalS(id_sem);
 			}
-			
+
 			// Cas recursiu
 			else if (elem_darrere >= '1' && elem_darrere <= '9') 
 			{
-				id_bustia = atoi(elem_darrere) - 1;
-				sendM(id_bustia, hiha_xoc, LONG_MISS);
+				// Transmets xoc
+				id_bustia = elem_darrere - 1;
+				sendM(id_bustia, &hiha_xoc, LONG_MISS);
 			} 
 		}
 
-		// TO DO: afegir retard?
-
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0) && es_dins == 1);
 
 	return 0;
 }
@@ -130,6 +156,8 @@ int main(int n_args, const char *ll_args[])
 	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 	signalS(id_sem);
+
+	es_dins = 1;
 
 	// Inicialitzem la bústia del procés
 	waitS(id_sem);
@@ -183,7 +211,7 @@ int main(int n_args, const char *ll_args[])
 
 		win_retard(p_mem->retard);
 
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0)  && es_dins == 1);
 
 	//***************************** FI DE JOC *******************************
 

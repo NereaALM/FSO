@@ -417,32 +417,24 @@ void * moure_pilota(void * cap)
 		// Condició de XOC amb paleta
 		switch (rebot)
 		{
-		case 'v':
-			if (rebot_vert >= '1' && rebot_vert <= '9') 
-			{
-				hiha_xoc = 1;
-				id_bustia = atoi(rebot_vert) - 1;
-				sendM(id_bustia, hiha_xoc, LONG_MISS);
-			}
-			break;
 		case 'h':
 			if (rebot_hori >= '1' && rebot_hori <= '9') 
 			{
 				hiha_xoc = 1;
-				id_bustia = atoi(rebot_hori) - 1;
-				sendM(id_bustia, hiha_xoc, LONG_MISS);
+				id_bustia = rebot_hori - 1;
+				sendM(id_bustia, &hiha_xoc, LONG_MISS);
 			}
 			break;
 		case 'd':
 			if (rebot_diag >= '1' && rebot_diag <= '9') 
 			{
 				hiha_xoc = 1;
-				id_bustia = atoi(rebot_diag) - 1;
-				sendM(id_bustia, hiha_xoc, LONG_MISS);
+				id_bustia = rebot_diag - 1;
+				sendM(id_bustia, &hiha_xoc, LONG_MISS);
 			}
 			break;
 		default:
-			// No hi ha rebot
+			// No hi ha rebot o es vertical i per tant no cal que es mogui la paleta
 			break;
 		}
 
