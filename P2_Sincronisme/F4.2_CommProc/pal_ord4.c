@@ -31,7 +31,7 @@ int ind;
 char ind_pantalla;
 
 // Threads
-//pthread_t thread_consulta;
+pthread_t thread_bustia;
 
 // Memoria compartida
 int id_taulell;
@@ -47,88 +47,90 @@ int id_sem;
 ///**************************************************************************
 
 // Thread per consultar si hi ha missatges nous
-/*
 void * consulta_bustia(void * cap)
 {
-	int id_bustia;
-	char hiha_xoc;
+	// Missatge rebut
+	int hiha_xoc;
 	int long_miss;
 
+	// Moviment de paletes
 	char elem_darrere[long_pal];
-	int moviment;
+	int hiha_elemD;
+	int id_bustia;
 
+	// Iterador
 	int i;
 
 	do
 	{
+		// Rebre missatge i veure si es correcte
 		long_miss = receiveM(p_mem->ids_busties[ind], &hiha_xoc);
 
 		if (long_miss == LONG_MISS && hiha_xoc == 1)
 		{
-			moviment = 0;
-
+			// Avaluar si hi ha elements darrerer de la paleta
+			hiha_elemD = 0;
 			waitS(id_sem);
 			for (i = 0; i < long_pal; i++)
 			{
 				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + 1);
 
 				if (elem_darrere[i] == '.')
-					moviment = 1;
-				else if (elem_darrere[i] >= '1' && elem_darrere[i] <= '9')
-					moviment = 2;
+					hiha_elemD = 1;
+				else if ((int) elem_darrere[i] >= MIN_PAL_MAQ && (int) elem_darrere[i] <= MAX_PAL_MAQ)
+					hiha_elemD = 2;
 			}
 			signalS(id_sem);
 
-			// Condicions finals
-			// Moure paleta cap a darrere
-			if (moviment == 0)
+			switch (hiha_elemD)
 			{
+			// CASOS FINALS
+			// Moure paleta cap a darrere
+			case 0:
 				waitS(id_sem);
-
-				// Esborrar paleta pos actual
+				for (i = 0; i < long_pal; i++)
+				{
+					// Esborrar pos actual
+					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
+					// Escriure nova posicio
+					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + 1, '0' + ind_pantalla, INVERS);
+				}
+				p_mem->col_pal_maq[ind]++;
+				signalS(id_sem);
+				break;
+			// Esborrar paleta de pantalla i eliminar procés
+			case 1:
+				waitS(id_sem);
+				// Esborrar paleta
 				for (i = 0; i < long_pal; i++)
 					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
-
-				// Escriure paleta nova posicio
-				p_mem->col_pal_maq[ind]++;
-				for (i = 0; i < long_pal; i++)
-					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS);
-
-				signalS(id_sem);
-			}
-			// Esborrar paleta de pantalla i eliminar procés
-			else if (moviment == 1)
-			{
-				// Esborrar paleta
-				waitS(id_sem);
-				for (i = p_mem->fil_pal_maq[ind]; i < p_mem->fil_pal_maq[ind] + long_pal; i++)
-					win_escricar(i, p_mem->col_pal_maq[ind], ' ', NO_INV);
-				
 				// Acaba procés
 				es_dins = 0;
 				signalS(id_sem);
-			}
+				break;
 
-			// Cas recursiu
-			else if (moviment == 3)
-			{
+			// CAS RECURSIU
+			case 2:
 				// Transmets xoc a totes les paletes que hi hagi darrera
 				for (i = 0; i < long_pal; i++)
 				{
-					if (elem_darrere[i] >= '1' && elem_darrere[i] <= '9')
+					if ((int) elem_darrere[i] >= MIN_PAL_MAQ && (int) elem_darrere[i] <= MAX_PAL_MAQ)
 					{
-						id_bustia = elem_darrere[i] - 1;
+						id_bustia = p_mem->ids_busties[(int) elem_darrere[i]  - 1];
 						sendM(id_bustia, &hiha_xoc, LONG_MISS);
 					}
 				}
-			} 
+				break;
+			
+			default:
+				break;
+			}
 		}
 
 	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0) && es_dins == 1);
 
 	return 0;
 }
-*/
 
 ///**************************************************************************
 // 	PRINCIPAL
@@ -184,7 +186,7 @@ int main(int n_args, const char *ll_args[])
 	p_mem->ids_busties[ind] = ini_mis();
 
 	// Creacio de thread per espera a missatges
-	//pthread_create(&thread_consulta, NULL, consulta_bustia, NULL);
+	pthread_create(&thread_bustia, NULL, consulta_bustia, NULL);
 
 	//****************************** JOC ***********************************
 	do
@@ -235,7 +237,7 @@ int main(int n_args, const char *ll_args[])
 	//***************************** FI DE JOC *******************************
 
 	// Espera a thread de consulta de busties
-	//pthread_join(thread_consulta, (void *)(intptr_t) thread_output);
+	pthread_join(thread_bustia, (void *)(intptr_t) thread_output);
 
 	// Eliminem la bústia del procés
 	elim_mis(p_mem->ids_busties[ind]);
