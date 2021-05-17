@@ -79,7 +79,6 @@ void * consulta_bustia(void * cap)
 
 				if (elem_darrere[i] == '+')
 					hiha_elemD = 1;
-				// TO DO: arreglar
 				else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
 						 (int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
 					hiha_elemD = 2;
@@ -127,11 +126,11 @@ void * consulta_bustia(void * cap)
 					// Si no hem enviat el missatje ja i 
 					// l'element és dins el rang d'indexos possibles de paletes, enviem el missatge
 					if (!elem_repetit &&
-						(int) elem_darrere[i] >= MIN_PAL_MAQ && 
-						(int) elem_darrere[i] <= MAX_PAL_MAQ)
+						(int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
+						(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
 					{
 						waitS(id_sem);
-						id_bustia = p_mem->ids_busties[(int) elem_darrere[i]  - 1];
+						id_bustia = p_mem->ids_busties[(int) (elem_darrere[i] - '0')  - 1];
 						signalS(id_sem);
 
 						sendM(id_bustia, &sentit_hori, LONG_MISS);

@@ -360,10 +360,10 @@ void * moure_pilota(void * cap)
 			}
 
 			// La pilota es mou d'esquerra a dreta
-			if (col_hipo > col_pilota)
+			if (col_hipo < col_pilota)
 				sentit_hori = 1;
 			// La pilota es mou de dreta a esquerra
-			else if (col_hipo < col_pilota)
+			else if (col_hipo > col_pilota)
 				sentit_hori = -1;
 			// La pilota no es mou en l'eix horitzontal
 			else sentit_hori = 0;
@@ -430,7 +430,6 @@ void * moure_pilota(void * cap)
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
 				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				printf("Send: id_bustia:%i, index:%i\n", id_bustia, ind_pal);
 				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 			break;
@@ -439,7 +438,6 @@ void * moure_pilota(void * cap)
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
 				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				printf("Send: id_bustia:%i, index:%i\n", id_bustia, ind_pal);
 				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 			break;
