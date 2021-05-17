@@ -426,18 +426,20 @@ void * moure_pilota(void * cap)
 		switch (rebot)
 		{
 		case 'h':
-			ind_pal = (int) rebot_hori;
+			ind_pal = rebot_hori - '0';
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
 				id_bustia = p_mem->ids_busties[ind_pal - 1];
+				printf("Send: id_bustia:%i, index:%i\n", id_bustia, ind_pal);
 				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 			break;
 		case 'd':
-			ind_pal = (int) rebot_diag;
+			ind_pal = rebot_diag - '0';
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
 				id_bustia = p_mem->ids_busties[ind_pal - 1];
+				printf("Send: id_bustia:%i, index:%i\n", id_bustia, ind_pal);
 				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 			break;

@@ -77,9 +77,11 @@ void * consulta_bustia(void * cap)
 			{
 				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
 
-				if (elem_darrere[i] == '.')
+				if (elem_darrere[i] == '+')
 					hiha_elemD = 1;
-				else if ((int) elem_darrere[i] >= MIN_PAL_MAQ && (int) elem_darrere[i] <= MAX_PAL_MAQ)
+				// TO DO: arreglar
+				else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
+						 (int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
 					hiha_elemD = 2;
 			}
 			signalS(id_sem);
@@ -128,7 +130,10 @@ void * consulta_bustia(void * cap)
 						(int) elem_darrere[i] >= MIN_PAL_MAQ && 
 						(int) elem_darrere[i] <= MAX_PAL_MAQ)
 					{
+						waitS(id_sem);
 						id_bustia = p_mem->ids_busties[(int) elem_darrere[i]  - 1];
+						signalS(id_sem);
+
 						sendM(id_bustia, &sentit_hori, LONG_MISS);
 					}
 				}
