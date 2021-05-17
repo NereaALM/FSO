@@ -31,7 +31,7 @@ int ind;
 char ind_pantalla;
 
 // Threads
-pthread_t thread_consulta;
+//pthread_t thread_consulta;
 
 // Memoria compartida
 int id_taulell;
@@ -47,6 +47,7 @@ int id_sem;
 ///**************************************************************************
 
 // Thread per consultar si hi ha missatges nous
+/*
 void * consulta_bustia(void * cap)
 {
 	int id_bustia;
@@ -127,6 +128,7 @@ void * consulta_bustia(void * cap)
 
 	return 0;
 }
+*/
 
 ///**************************************************************************
 // 	PRINCIPAL
@@ -182,7 +184,7 @@ int main(int n_args, const char *ll_args[])
 	p_mem->ids_busties[ind] = ini_mis();
 
 	// Creacio de thread per espera a missatges
-	pthread_create(&thread_consulta, NULL, consulta_bustia, NULL);
+	//pthread_create(&thread_consulta, NULL, consulta_bustia, NULL);
 
 	//****************************** JOC ***********************************
 	do
@@ -233,7 +235,7 @@ int main(int n_args, const char *ll_args[])
 	//***************************** FI DE JOC *******************************
 
 	// Espera a thread de consulta de busties
-	pthread_join(thread_consulta, (void *)(intptr_t) thread_output);
+	//pthread_join(thread_consulta, (void *)(intptr_t) thread_output);
 
 	// Eliminem la bústia del procés
 	elim_mis(p_mem->ids_busties[ind]);

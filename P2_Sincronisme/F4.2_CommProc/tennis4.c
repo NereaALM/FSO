@@ -299,8 +299,9 @@ void * moure_pilota(void * cap)
 
 	// Missatges / Xocs
 	char rebot;
-	char hiha_xoc;
+	int hiha_xoc;
 	int id_bustia;
+	int ind_pal;
 
 	// Joc
 	do
@@ -417,18 +418,20 @@ void * moure_pilota(void * cap)
 		switch (rebot)
 		{
 		case 'h':
-			if (rebot_hori >= '1' && rebot_hori <= '9') 
+			ind_pal = (int) rebot_hori;
+			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
 				hiha_xoc = 1;
-				id_bustia = rebot_hori - 1;
+				id_bustia = p_mem->ids_busties[ind_pal - 1];
 				sendM(id_bustia, &hiha_xoc, LONG_MISS);
 			}
 			break;
 		case 'd':
-			if (rebot_diag >= '1' && rebot_diag <= '9') 
+			ind_pal = (int) rebot_diag; 
+			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
 				hiha_xoc = 1;
-				id_bustia = rebot_diag - 1;
+				id_bustia = p_mem->ids_busties[ind_pal - 1];
 				sendM(id_bustia, &hiha_xoc, LONG_MISS);
 			}
 			break;
