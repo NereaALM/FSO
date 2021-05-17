@@ -299,15 +299,14 @@ void * moure_pilota(void * cap)
 
 	// Missatges / Xocs
 	char rebot;
-	int hiha_xoc;
 	int id_bustia;
 	int ind_pal;
+	int sentit_hori;
 
 	// Joc
 	do
 	{
 		// Condicions inicials
-		hiha_xoc = 0;
 		rebot = 0;
 		rebot_hori = rebot_vert = rebot_diag = ' ';
 
@@ -359,6 +358,15 @@ void * moure_pilota(void * cap)
 				}
 				signalS(id_sem);
 			}
+
+			// La pilota es mou d'esquerra a dreta
+			if (col_hipo > col_pilota)
+				sentit_hori = 1;
+			// La pilota es mou de dreta a esquerra
+			else if (col_hipo < col_pilota)
+				sentit_hori = -1;
+			// La pilota no es mou en l'eix horitzontal
+			else sentit_hori = 0;
 
 			// Moure
 			waitS(id_sem);
@@ -421,18 +429,16 @@ void * moure_pilota(void * cap)
 			ind_pal = (int) rebot_hori;
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
-				hiha_xoc = 1;
 				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				sendM(id_bustia, &hiha_xoc, LONG_MISS);
+				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 			break;
 		case 'd':
-			ind_pal = (int) rebot_diag; 
+			ind_pal = (int) rebot_diag;
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 			{
-				hiha_xoc = 1;
 				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				sendM(id_bustia, &hiha_xoc, LONG_MISS);
+				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 			break;
 		default:

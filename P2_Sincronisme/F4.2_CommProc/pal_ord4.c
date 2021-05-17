@@ -50,30 +50,32 @@ int id_sem;
 void * consulta_bustia(void * cap)
 {
 	// Missatge rebut
-	int hiha_xoc;
+	int sentit_hori; // 1: E -> D; -1: E <- D
 	int long_miss;
 
 	// Moviment de paletes
 	char elem_darrere[long_pal];
+	int elem_repetit;
 	int hiha_elemD;
 	int id_bustia;
 
 	// Iterador
 	int i;
+	int j;
 
 	do
 	{
 		// Rebre missatge i veure si es correcte
-		long_miss = receiveM(p_mem->ids_busties[ind], &hiha_xoc);
+		long_miss = receiveM(p_mem->ids_busties[ind], &sentit_hori);
 
-		if (long_miss == LONG_MISS && hiha_xoc == 1)
+		if (long_miss == LONG_MISS && sentit_hori != 0)
 		{
 			// Avaluar si hi ha elements darrerer de la paleta
 			hiha_elemD = 0;
 			waitS(id_sem);
 			for (i = 0; i < long_pal; i++)
 			{
-				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + 1);
+				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
 
 				if (elem_darrere[i] == '.')
 					hiha_elemD = 1;
@@ -93,9 +95,9 @@ void * consulta_bustia(void * cap)
 					// Esborrar pos actual
 					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
 					// Escriure nova posicio
-					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + 1, '0' + ind_pantalla, INVERS);
+					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori, '0' + ind_pantalla, INVERS);
 				}
-				p_mem->col_pal_maq[ind]++;
+				p_mem->col_pal_maq[ind]+=sentit_hori;
 				signalS(id_sem);
 				break;
 			// Esborrar paleta de pantalla i eliminar procés
@@ -114,10 +116,20 @@ void * consulta_bustia(void * cap)
 				// Transmets xoc a totes les paletes que hi hagi darrera
 				for (i = 0; i < long_pal; i++)
 				{
-					if ((int) elem_darrere[i] >= MIN_PAL_MAQ && (int) elem_darrere[i] <= MAX_PAL_MAQ)
+					// Em busco a mi mateix en els elements visistats per evitar reenviar missatges
+					elem_repetit = 0;
+					for (j = i; j > 0 && !elem_repetit; j--)
+						if (elem_darrere[i] == elem_darrere[j])
+							elem_repetit = 1;
+					
+					// Si no hem enviat el missatje ja i 
+					// l'element és dins el rang d'indexos possibles de paletes, enviem el missatge
+					if (!elem_repetit &&
+						(int) elem_darrere[i] >= MIN_PAL_MAQ && 
+						(int) elem_darrere[i] <= MAX_PAL_MAQ)
 					{
 						id_bustia = p_mem->ids_busties[(int) elem_darrere[i]  - 1];
-						sendM(id_bustia, &hiha_xoc, LONG_MISS);
+						sendM(id_bustia, &sentit_hori, LONG_MISS);
 					}
 				}
 				break;
