@@ -188,9 +188,6 @@ int main(int n_args, const char *ll_args[])
 		exit(0);
 	}
 
-	// Inicialitzar parametres de control de paleta
-	p_mem->pal_es_viva[ind] = 1;
-
 	// Obtenir accés a la pantalla
 	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);

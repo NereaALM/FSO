@@ -115,7 +115,6 @@ int id_sem;
 void carrega_parametres(const char * nom_fit)
 {
 	FILE *fit;
-	int num_pal_maq;
 
 	// Obrir fitxer
 	fit = fopen(nom_fit, "rt"); 
@@ -296,13 +295,13 @@ void * moure_pilota(void * cap)
 
 	// Missatges / Xocs
 	char rebot;
-	int id_bustia;
-	int ind_pal;
 	int sentit_hori;
+	int ind_pal;
+	int id_bustia;
 
 	// Iteradors
 	int i;
-	int hiha_pal_viva;
+	int trobada;
 
 	// Joc
 	do
@@ -406,9 +405,8 @@ void * moure_pilota(void * cap)
 					gols_usuari++;
 					p_mem->num_pilotes--;
 					
-					// Inicialitzar pilota a porteria maquina
-					hiha_pal_viva = 0;
-					for (i = 0; i < num_pal_maq && hiha_pal_viva != 1; i++)
+					trobada = 0;
+					for (i = 0; i < num_pal_maq && trobada == 0; i++)
 					{
 						if(p_mem->pal_es_viva[i] == 1)
 						{
@@ -418,11 +416,9 @@ void * moure_pilota(void * cap)
 							col_pilota_R = col_pilota;
 							win_escricar(fil_pilota, col_pilota, '.', INVERS);
 
-							hiha_pal_viva = 1;
+							trobada = 1;
 						}
 					}
-
-					
 				}
 			}
 			signalS(id_sem);
@@ -578,13 +574,13 @@ int main(int n_args, const char *ll_args[])
 	p_mem = map_mem(id_mem);
 	p_mem->retard = mem_comp.retard;
 	p_mem->num_pilotes = mem_comp.num_pilotes;
-	for (i = 0; i < MAX_PAL_MAQ; i++)
+	for (i = 0; i < num_pal_maq; i++)
 	{
 		p_mem->fil_pal_maq[i] = mem_comp.fil_pal_maq[i];
 		p_mem->col_pal_maq[i] = mem_comp.col_pal_maq[i];
 		p_mem->pVertical_pal_maq[i] = mem_comp.pVertical_pal_maq[i];
 		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
-		p_mem->pal_es_viva[i] = 0;
+		p_mem->pal_es_viva[i] = 1;
 	}
 
 	// Preparació d'arguments per inicialitzar processos
