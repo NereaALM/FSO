@@ -663,7 +663,7 @@ int main(int n_args, const char *ll_args[])
 		signalS(id_sem);
 
 		win_retard(p_mem->retard);
-
+		
 	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
 
 	//***************************** FI DE JOC *******************************
