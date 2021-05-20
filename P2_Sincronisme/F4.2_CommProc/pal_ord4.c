@@ -110,6 +110,7 @@ void * consulta_bustia(void * cap)
 					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
 				// Acaba procés
 				p_mem->pal_es_viva[ind] = 0;
+
 				signalS(id_sem);
 				break;
 

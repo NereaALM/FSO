@@ -433,39 +433,55 @@ void * moure_pilota(void * cap)
 					col_pilota = col_pal_usu + 1;
 					fil_pilota_R = fil_pilota;
 					col_pilota_R = col_pilota;
+					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 					
+					// Inicialitzar velocitat
 					v_fil_pilota_R = v_fil_pilota_ini_R;
 					v_col_pilota_R = v_col_pilota_ini_R;
 					if( v_col_pilota_R < 0)
 						v_col_pilota_R = -v_col_pilota_R;
-
-					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 				else if (col_pilota > nCol_taulell)
 				{
 					gols_usuari++;
 					p_mem->num_pilotes--;
 					
-					// Inicialitzo pilota a porteria de paletes
 					trobada = 0;
 					for (i = 0; i < num_pal_maq && trobada == 0; i++)
 					{
 						if(p_mem->pal_es_viva[i] == 1)
 						{
+							// Inicialitzo pilota a porteria de paletes
 							fil_pilota = p_mem->fil_pal_maq[i] + long_pal / 2;
 							col_pilota = p_mem->col_pal_maq[i] - 1;
 							fil_pilota_R = fil_pilota;
 							col_pilota_R = col_pilota;
+							win_escricar(fil_pilota, col_pilota, '.', INVERS);
 							
+							// Inicialitzar velocitat
 							v_fil_pilota_R = v_fil_pilota_ini_R;
 							v_col_pilota_R = v_col_pilota_ini_R;
 							if (v_col_pilota_R > 0)
 								v_col_pilota_R = -v_col_pilota_R;
-
-							win_escricar(fil_pilota, col_pilota, '.', INVERS);
-
+							
 							trobada = 1;
 						}
+					}
+
+					if (trobada == 0)
+					{
+						// Inicialitzar pilota a porteria usuari
+						fil_pilota = fil_pal_usu + long_pal / 2;
+						col_pilota = col_pal_usu + 1;
+						fil_pilota_R = fil_pilota;
+						col_pilota_R = col_pilota;
+						win_escricar(fil_pilota, col_pilota, '.', INVERS);
+						
+						// Inicialitzar velocitat
+						v_fil_pilota_R = v_fil_pilota_ini_R;
+						v_col_pilota_R = v_col_pilota_ini_R;
+						if( v_col_pilota_R < 0)
+							v_col_pilota_R = -v_col_pilota_R;
 					}
 				}
 			}
@@ -481,7 +497,7 @@ void * moure_pilota(void * cap)
 
 		win_retard(p_mem->retard);
 
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
 
 	return 0;
 }
@@ -519,7 +535,7 @@ void * mou_paleta_usuari(void * cap)
 
 		win_retard(p_mem->retard);
 
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
 
 	return 0;
 }
@@ -648,7 +664,7 @@ int main(int n_args, const char *ll_args[])
 
 		win_retard(p_mem->retard);
 
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0));
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
 
 	//***************************** FI DE JOC *******************************
 
