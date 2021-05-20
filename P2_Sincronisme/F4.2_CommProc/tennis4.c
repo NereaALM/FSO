@@ -68,6 +68,10 @@ int nCol_taulell;
 int mida_porteria;
 int long_pal;
 
+// Gestio de la partida
+int gols_usuari;
+int gols_maquina;
+
 // Posicio i velocitat pilota
 int fil_pilota;
 int col_pilota;
@@ -75,10 +79,6 @@ float fil_pilota_R;
 float col_pilota_R;
 float v_fil_pilota_R;
 float v_col_pilota_R;
-
-// Gestio de la partida
-int gols_usuari;
-int gols_maquina;
 
 // Posicio usuari
 int fil_pal_usu;
@@ -89,6 +89,7 @@ pthread_t taula_threads[MAX_THREADS];
 
 // Processos
 pid_t pid_pal_maq[MAX_PAL_MAQ];
+int num_pal_maq;
 
 // Memoria compartida
 int id_taulell;
@@ -111,9 +112,7 @@ int id_sem;
 // tinent al SO (segons comentaris del principi del programa).
 // Input:
 // - nom_fitxer amb camp de joc
-// Output:
-// - nombre de paletes de la maquina
-int carrega_parametres(const char * nom_fit)
+void carrega_parametres(const char * nom_fit)
 {
 	FILE *fit;
 	int num_pal_maq;
@@ -190,8 +189,6 @@ int carrega_parametres(const char * nom_fit)
 	fclose(fit);
 
 	// Fitxer carregat: tot OK!
-
-	return num_pal_maq;
 }
 
 // funcio per inicialitar les variables i visualitzar l'estat inicial del joc
@@ -303,6 +300,10 @@ void * moure_pilota(void * cap)
 	int ind_pal;
 	int sentit_hori;
 
+	// Iteradors
+	int i;
+	int hiha_pal_viva;
+
 	// Joc
 	do
 	{
@@ -325,6 +326,7 @@ void * moure_pilota(void * cap)
 				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
 				if (rebot_vert != ' ')					   // si no hi ha res
 				{
+					rebot = 'v';
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
@@ -403,13 +405,24 @@ void * moure_pilota(void * cap)
 				{
 					gols_usuari++;
 					p_mem->num_pilotes--;
-
+					
 					// Inicialitzar pilota a porteria maquina
-					fil_pilota = p_mem->fil_pal_maq[0] + long_pal / 2;
-					col_pilota = p_mem->col_pal_maq[0] - 1;
-					fil_pilota_R = fil_pilota;
-					col_pilota_R = col_pilota;
-					win_escricar(fil_pilota, col_pilota, '.', INVERS);
+					hiha_pal_viva = 0;
+					for (i = 0; i < num_pal_maq && hiha_pal_viva != 1; i++)
+					{
+						if(p_mem->pal_es_viva[i] == 1)
+						{
+							fil_pilota = p_mem->fil_pal_maq[i] + long_pal / 2;
+							col_pilota = p_mem->col_pal_maq[i] - 1;
+							fil_pilota_R = fil_pilota;
+							col_pilota_R = col_pilota;
+							win_escricar(fil_pilota, col_pilota, '.', INVERS);
+
+							hiha_pal_viva = 1;
+						}
+					}
+
+					
 				}
 			}
 			signalS(id_sem);
@@ -425,6 +438,15 @@ void * moure_pilota(void * cap)
 		// Condició de XOC amb paleta
 		switch (rebot)
 		{
+		// TO DO: Pot ser treure
+		case 'v':
+		ind_pal = rebot_vert - '0';
+		if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
+		{
+			id_bustia = p_mem->ids_busties[ind_pal - 1];
+			sendM(id_bustia, &sentit_hori, LONG_MISS);
+		}
+		break;
 		case 'h':
 			ind_pal = rebot_hori - '0';
 			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
@@ -510,11 +532,10 @@ int main(int n_args, const char *ll_args[])
 	int thread_output;
 
 	// Per crear processos
-	int num_pal_maq;
 	int i;
 	char args_proc[NUM_ARGS_PROC][MAX_STRING];
 
-	//************* INICIALITZACIONS & CONTROL D'ERRORS ********************
+	//************ LECTURA DE PARÀMETRES & CONTROL D'ERRORS ******************
 
 	// Nombre de parametres valid
 	if ((n_args != 3) && (n_args != 4))
@@ -524,7 +545,7 @@ int main(int n_args, const char *ll_args[])
 	}
 
 	// Carrega de parametres en base a fitxer de camp donat
-	num_pal_maq = carrega_parametres(ll_args[1]);
+	carrega_parametres(ll_args[1]);
 
 	// Nombre de pilotes de la partida
 	mem_comp.num_pilotes = atoi(ll_args[2]);
@@ -539,6 +560,8 @@ int main(int n_args, const char *ll_args[])
 		mem_comp.retard = atoi(ll_args[3]);
 	else
 		mem_comp.retard = 100;
+
+	//************** INICIALITZACIONS & CONTROL D'ERRORS ********************
 
 	// Creacio del taulell de joc
 	if (inicialitza_joc(num_pal_maq) != 0)
@@ -561,6 +584,7 @@ int main(int n_args, const char *ll_args[])
 		p_mem->col_pal_maq[i] = mem_comp.col_pal_maq[i];
 		p_mem->pVertical_pal_maq[i] = mem_comp.pVertical_pal_maq[i];
 		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
+		p_mem->pal_es_viva[i] = 0;
 	}
 
 	// Preparació d'arguments per inicialitzar processos

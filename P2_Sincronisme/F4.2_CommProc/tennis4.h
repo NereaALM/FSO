@@ -30,6 +30,8 @@
 
 // Sincronisme
 #include "semafor.h"
+
+// Comunicació
 #include "missatge.h"
 
 //*************************** Limits de globals *****************************
@@ -50,16 +52,20 @@
 //****************************** Structs ************************************
 typedef struct
 {
-	// Gestio de la partida
+	// GESTIÓ DE LA PARTIDA
 	int retard; // [ms]
 	int tecla;
 	int num_pilotes;
 
-	// Posicio i velocitat de la maquina
+	// DADES DE PALETES
+	// Posició i velocitat
 	int fil_pal_maq[MAX_PAL_MAQ];
 	int col_pal_maq[MAX_PAL_MAQ];
 	float pVertical_pal_maq[MAX_PAL_MAQ];
 	float v_pal_maq[MAX_PAL_MAQ];
+
+	// Vida
+	int pal_es_viva[MAX_PAL_MAQ];
 
 	// Comunicació amb busties IPC
 	int ids_busties[MAX_PAL_MAQ];

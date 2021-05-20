@@ -23,9 +23,6 @@ int nFil_taulell;
 int nCol_taulell;
 int long_pal;
 
-// Gestió de la partida
-int es_dins;
-
 // Indexos
 int ind;
 char ind_pantalla;
@@ -59,7 +56,7 @@ void * consulta_bustia(void * cap)
 	int hiha_elemD;
 	int id_bustia;
 
-	// Iterador
+	// Iteradors
 	int i;
 	int j;
 
@@ -73,12 +70,14 @@ void * consulta_bustia(void * cap)
 			// Avaluar si hi ha elements darrerer de la paleta
 			hiha_elemD = 0;
 			waitS(id_sem);
-			for (i = 0; i < long_pal; i++)
+			for (i = 0; i < long_pal && hiha_elemD != 1; i++)
 			{
 				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
 
+				// Taulell
 				if (elem_darrere[i] == '+')
 					hiha_elemD = 1;
+				// Paleta
 				else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
 						 (int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
 					hiha_elemD = 2;
@@ -108,7 +107,7 @@ void * consulta_bustia(void * cap)
 				for (i = 0; i < long_pal; i++)
 					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
 				// Acaba procés
-				es_dins = 0;
+				p_mem->pal_es_viva[ind] = 0;
 				signalS(id_sem);
 				break;
 
@@ -143,7 +142,7 @@ void * consulta_bustia(void * cap)
 			}
 		}
 
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0) && es_dins == 1);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0  && p_mem->pal_es_viva[ind] == 1);
 
 	return 0;
 }
@@ -163,7 +162,6 @@ int main(int n_args, const char *ll_args[])
 	//************ INICIALITZACIONS & CONTROL D'ERRORS ***********************
 
 	// Carregar parametres d'entrada del procés en variables
-
 	// rang i: 			[0, 8]
 	ind = atoi(ll_args[1]);
 	// rang char_index: [1, 9]
@@ -190,13 +188,13 @@ int main(int n_args, const char *ll_args[])
 		exit(0);
 	}
 
+	// Inicialitzar parametres de control de paleta
+	p_mem->pal_es_viva[ind] = 1;
+
 	// Obtenir accés a la pantalla
 	waitS(id_sem);
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 	signalS(id_sem);
-
-	// La paleta en un inici es dins el taulell
-	es_dins = 1;
 
 	// Inicialitzem la bústia del procés
 	p_mem->ids_busties[ind] = ini_mis();
@@ -248,7 +246,7 @@ int main(int n_args, const char *ll_args[])
 
 		win_retard(p_mem->retard);
 
-	} while ((p_mem->tecla != TEC_RETURN) && (p_mem->num_pilotes > 0)  && es_dins == 1);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0  && p_mem->pal_es_viva[ind] == 1);
 
 	//***************************** FI DE JOC *******************************
 
