@@ -48,7 +48,6 @@ void * consulta_bustia(void * cap)
 {
 	// Missatge rebut
 	int sentit_hori; // 1: E -> D; -1: E <- D
-	int long_miss;
 
 	// Moviment de paletes
 	char elem_darrere[long_pal];
@@ -62,87 +61,83 @@ void * consulta_bustia(void * cap)
 
 	do
 	{
-		// Rebre missatge i veure si es correcte
-		long_miss = receiveM(p_mem->ids_busties[ind], &sentit_hori);
+		// Rebre missatge
+		receiveM(p_mem->ids_busties[ind], &sentit_hori);
 
-		if (long_miss == LONG_MISS && sentit_hori != 0)
+		// Avaluar tipus de xoc
+		hiha_elemD = 0;
+		waitS(id_sem);
+		for (i = 0; i < long_pal && hiha_elemD != 1; i++)
 		{
+			elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
 
-			// Avaluar tipus de xoc
-			hiha_elemD = 0;
-			waitS(id_sem);
-			for (i = 0; i < long_pal && hiha_elemD != 1; i++)
-			{
-				elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
-
-				// Taulell
-				if (elem_darrere[i] == '+')
-					hiha_elemD = 1;
-				// Paleta
-				else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
-						 (int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
-					hiha_elemD = 2;
-			}
-			signalS(id_sem);
-
-			// Actuar segons el xoc
-			switch (hiha_elemD)
-			{
-			// CASOS FINALS
-			// Moure paleta cap a darrere
-			case 0:
-				waitS(id_sem);
-				for (i = 0; i < long_pal; i++)
-				{
-					// Esborrar pos actual
-					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
-					// Escriure nova posicio
-					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori, '0' + ind_pantalla, INVERS);
-				}
-				p_mem->col_pal_maq[ind]+=sentit_hori;
-				signalS(id_sem);
-				break;
-			// Esborrar paleta de pantalla i eliminar procés
-			case 1:
-				waitS(id_sem);
-				// Esborrar paleta
-				for (i = 0; i < long_pal; i++)
-					win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
-				// Acaba procés
-				p_mem->pal_es_viva[ind] = 0;
-
-				signalS(id_sem);
-				break;
-
-			// CAS RECURSIU
-			case 2:
-				// Transmets xoc a totes les paletes que hi hagi darrera
-				for (i = 0; i < long_pal; i++)
-				{
-					// Em busco a mi mateix en els elements visistats per evitar reenviar missatges
-					elem_repetit = 0;
-					for (j = i; j > 0 && !elem_repetit; j--)
-						if (elem_darrere[i] == elem_darrere[j])
-							elem_repetit = 1;
-					
-					// Si no hem enviat el missatje ja i 
-					// l'element és dins el rang d'indexos possibles de paletes, enviem el missatge
-					if (!elem_repetit &&
-						(int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
+			// Taulell
+			if (elem_darrere[i] == '+')
+				hiha_elemD = 1;
+			// Paleta
+			else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
 						(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
-					{
-						waitS(id_sem);
-						id_bustia = p_mem->ids_busties[(int) (elem_darrere[i] - '0')  - 1];
-						signalS(id_sem);
+				hiha_elemD = 2;
+		}
+		signalS(id_sem);
 
-						sendM(id_bustia, &sentit_hori, LONG_MISS);
-					}
-				}
-				break;
-			
-			default:
-				break;
+		// Actuar segons el xoc
+		switch (hiha_elemD)
+		{
+		// CASOS FINALS
+		// Moure paleta cap a darrere
+		case 0:
+			waitS(id_sem);
+			for (i = 0; i < long_pal; i++)
+			{
+				// Esborrar pos actual
+				win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
+				// Escriure nova posicio
+				win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori, '0' + ind_pantalla, INVERS);
 			}
+			p_mem->col_pal_maq[ind]+=sentit_hori;
+			signalS(id_sem);
+			break;
+		// Esborrar paleta de pantalla i eliminar procés
+		case 1:
+			waitS(id_sem);
+			// Esborrar paleta
+			for (i = 0; i < long_pal; i++)
+				win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
+			// Acaba procés
+			p_mem->pal_es_viva[ind] = 0;
+
+			signalS(id_sem);
+			break;
+
+		// CAS RECURSIU
+		case 2:
+			// Transmets xoc a totes les paletes que hi hagi darrera
+			for (i = 0; i < long_pal; i++)
+			{
+				// Em busco a mi mateix en els elements visistats per evitar reenviar missatges
+				elem_repetit = 0;
+				for (j = i; j > 0 && !elem_repetit; j--)
+					if (elem_darrere[i] == elem_darrere[j])
+						elem_repetit = 1;
+				
+				// Si no hem enviat el missatje ja i 
+				// l'element és dins el rang d'indexos possibles de paletes, enviem el missatge
+				if (!elem_repetit &&
+					(int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
+					(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
+				{
+					waitS(id_sem);
+					id_bustia = p_mem->ids_busties[(int) (elem_darrere[i] - '0')  - 1];
+					signalS(id_sem);
+
+					sendM(id_bustia, &sentit_hori, LONG_MISS);
+				}
+			}
+			break;
+		
+		default:
+			break;
 		}
 
 	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0  && p_mem->pal_es_viva[ind] == 1);

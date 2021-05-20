@@ -329,7 +329,6 @@ void * moure_pilota(void * cap)
 				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
 				if (rebot_vert != ' ')					   // si no hi ha res
 				{
-					rebot = 'v';
 					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
 					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
@@ -374,15 +373,6 @@ void * moure_pilota(void * cap)
 			// Condició de XOC amb paleta
 			switch (rebot)
 			{
-			// TO DO: Pot ser treure
-			case 'v':
-			ind_pal = rebot_vert - '0';
-			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
-			{
-				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				sendM(id_bustia, &sentit_hori, LONG_MISS);
-			}
-			break;
 			case 'h':
 				ind_pal = rebot_hori - '0';
 				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
