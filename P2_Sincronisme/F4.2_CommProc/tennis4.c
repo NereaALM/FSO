@@ -79,6 +79,8 @@ float fil_pilota_R;
 float col_pilota_R;
 float v_fil_pilota_R;
 float v_col_pilota_R;
+float v_fil_pilota_ini_R;
+float v_col_pilota_ini_R;
 
 // Posicio usuari
 int fil_pal_usu;
@@ -156,6 +158,8 @@ void carrega_parametres(const char * nom_fit)
 		fclose(fit);
 		exit(4);
 	}
+	v_fil_pilota_ini_R = v_fil_pilota_R;
+	v_col_pilota_ini_R = v_col_pilota_R;
 
 	// Parametres paleta ordinador
 	num_pal_maq = 0;
@@ -360,16 +364,47 @@ void * moure_pilota(void * cap)
 				signalS(id_sem);
 			}
 
-			// La pilota es mou d'esquerra a dreta
-			if (col_hipo < col_pilota)
+			// Sentit del moviment en l'eix horitzontal
+			if (col_hipo < col_pilota) // E -> D
 				sentit_hori = 1;
-			// La pilota es mou de dreta a esquerra
-			else if (col_hipo > col_pilota)
+			else if (col_hipo > col_pilota) // E <- D
 				sentit_hori = -1;
-			// La pilota no es mou en l'eix horitzontal
-			else sentit_hori = 0;
+			else sentit_hori = 0; 
 
-			// Moure
+			// Condició de XOC amb paleta
+			switch (rebot)
+			{
+			// TO DO: Pot ser treure
+			case 'v':
+			ind_pal = rebot_vert - '0';
+			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
+			{
+				id_bustia = p_mem->ids_busties[ind_pal - 1];
+				sendM(id_bustia, &sentit_hori, LONG_MISS);
+			}
+			break;
+			case 'h':
+				ind_pal = rebot_hori - '0';
+				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
+				{
+					id_bustia = p_mem->ids_busties[ind_pal - 1];
+					sendM(id_bustia, &sentit_hori, LONG_MISS);
+				}
+				break;
+			case 'd':
+				ind_pal = rebot_diag - '0';
+				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
+				{
+					id_bustia = p_mem->ids_busties[ind_pal - 1];
+					sendM(id_bustia, &sentit_hori, LONG_MISS);
+				}
+				break;
+			default:
+				// No hi ha rebot o es vertical i per tant no cal que es mogui la paleta
+				break;
+			}
+
+			// Moure pilota
 			waitS(id_sem);
 			if (win_quincar(fil_hipo, col_hipo) == ' ')					   
 			{													   
@@ -398,6 +433,12 @@ void * moure_pilota(void * cap)
 					col_pilota = col_pal_usu + 1;
 					fil_pilota_R = fil_pilota;
 					col_pilota_R = col_pilota;
+					
+					v_fil_pilota_R = v_fil_pilota_ini_R;
+					v_col_pilota_R = v_col_pilota_ini_R;
+					if( v_col_pilota_R < 0)
+						v_col_pilota_R = -v_col_pilota_R;
+
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				}
 				else if (col_pilota > nCol_taulell)
@@ -405,6 +446,7 @@ void * moure_pilota(void * cap)
 					gols_usuari++;
 					p_mem->num_pilotes--;
 					
+					// Inicialitzo pilota a porteria de paletes
 					trobada = 0;
 					for (i = 0; i < num_pal_maq && trobada == 0; i++)
 					{
@@ -414,6 +456,12 @@ void * moure_pilota(void * cap)
 							col_pilota = p_mem->col_pal_maq[i] - 1;
 							fil_pilota_R = fil_pilota;
 							col_pilota_R = col_pilota;
+							
+							v_fil_pilota_R = v_fil_pilota_ini_R;
+							v_col_pilota_R = v_col_pilota_ini_R;
+							if (v_col_pilota_R > 0)
+								v_col_pilota_R = -v_col_pilota_R;
+
 							win_escricar(fil_pilota, col_pilota, '.', INVERS);
 
 							trobada = 1;
@@ -429,39 +477,6 @@ void * moure_pilota(void * cap)
 			// Actualitzar floats de posició amb velocitats
 			fil_pilota_R += v_fil_pilota_R;
 			col_pilota_R += v_col_pilota_R;
-		}
-
-		// Condició de XOC amb paleta
-		switch (rebot)
-		{
-		// TO DO: Pot ser treure
-		case 'v':
-		ind_pal = rebot_vert - '0';
-		if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
-		{
-			id_bustia = p_mem->ids_busties[ind_pal - 1];
-			sendM(id_bustia, &sentit_hori, LONG_MISS);
-		}
-		break;
-		case 'h':
-			ind_pal = rebot_hori - '0';
-			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
-			{
-				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				sendM(id_bustia, &sentit_hori, LONG_MISS);
-			}
-			break;
-		case 'd':
-			ind_pal = rebot_diag - '0';
-			if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
-			{
-				id_bustia = p_mem->ids_busties[ind_pal - 1];
-				sendM(id_bustia, &sentit_hori, LONG_MISS);
-			}
-			break;
-		default:
-			// No hi ha rebot o es vertical i per tant no cal que es mogui la paleta
-			break;
 		}
 
 		win_retard(p_mem->retard);

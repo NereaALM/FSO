@@ -67,7 +67,8 @@ void * consulta_bustia(void * cap)
 
 		if (long_miss == LONG_MISS && sentit_hori != 0)
 		{
-			// Avaluar si hi ha elements darrerer de la paleta
+
+			// Avaluar tipus de xoc
 			hiha_elemD = 0;
 			waitS(id_sem);
 			for (i = 0; i < long_pal && hiha_elemD != 1; i++)
@@ -84,6 +85,7 @@ void * consulta_bustia(void * cap)
 			}
 			signalS(id_sem);
 
+			// Actuar segons el xoc
 			switch (hiha_elemD)
 			{
 			// CASOS FINALS
