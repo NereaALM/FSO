@@ -366,10 +366,10 @@ void *moure_pilota(void *cap)
 			// Sentit del moviment en l'eix horitzontal
 			// amb canvi de simbol pq el simbol de la velocitat ja està canviat després del rebot
 			sentit_hori = 0;
-			if (v_col_pilota_R > 0) // E -> D
-				sentit_hori = -1;
-			else if (v_col_pilota_R < 0) // E <- D
+			if (-v_col_pilota_R > 0)
 				sentit_hori = 1;
+			else if (-v_col_pilota_R < 0)
+				sentit_hori = -1;
 
 			// Condició de XOC amb paleta
 			switch (rebot)
@@ -379,7 +379,12 @@ void *moure_pilota(void *cap)
 				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 				{
 					id_bustia = p_mem->ids_busties[ind_pal - 1];
+					
 					sendM(id_bustia, &sentit_hori, LONG_MISS);
+
+					waitS(id_sem);
+					p_mem->miss_pendents[ind_pal - 1]++;
+					signalS(id_sem);
 				}
 				break;
 			case 'd':
@@ -387,7 +392,12 @@ void *moure_pilota(void *cap)
 				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
 				{
 					id_bustia = p_mem->ids_busties[ind_pal - 1];
+					
 					sendM(id_bustia, &sentit_hori, LONG_MISS);
+
+					waitS(id_sem);
+					p_mem->miss_pendents[ind_pal - 1]++;
+					signalS(id_sem);
 				}
 				break;
 			default:
@@ -457,22 +467,6 @@ void *moure_pilota(void *cap)
 
 							trobada = 1;
 						}
-					}
-
-					if (trobada == 0)
-					{
-						// Inicialitzar pilota a porteria usuari
-						fil_pilota = fil_pal_usu + long_pal / 2;
-						col_pilota = col_pal_usu + 1;
-						fil_pilota_R = fil_pilota;
-						col_pilota_R = col_pilota;
-						win_escricar(fil_pilota, col_pilota, '.', INVERS);
-
-						// Inicialitzar velocitat
-						v_fil_pilota_R = v_fil_pilota_ini_R;
-						v_col_pilota_R = v_col_pilota_ini_R;
-						if (v_col_pilota_R < 0)
-							v_col_pilota_R = -v_col_pilota_R;
 					}
 				}
 			}
@@ -602,6 +596,7 @@ int main(int n_args, const char *ll_args[])
 		p_mem->col_pal_maq[i] = mem_comp.col_pal_maq[i];
 		p_mem->pVertical_pal_maq[i] = mem_comp.pVertical_pal_maq[i];
 		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
+		p_mem->miss_pendents[i] = 0;
 		p_mem->pal_es_viva[i] = 1;
 	}
 	p_mem->hiha_pal_viva = 1;

@@ -70,5 +70,6 @@ typedef struct
 
 	// Comunicació amb busties IPC
 	int ids_busties[MAX_PAL_MAQ];
+	int miss_pendents[MAX_PAL_MAQ];
 
 } mem_compartida;
