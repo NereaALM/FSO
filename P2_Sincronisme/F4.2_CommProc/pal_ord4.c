@@ -64,9 +64,14 @@ void * consulta_bustia(void * cap)
 		// Rebre missatge
 		receiveM(p_mem->ids_busties[ind], &sentit_hori);
 
+		waitS(id_sem);
+		fprintf(stdout, "Sentit horitzontal: %i\n", sentit_hori);
+		signalS(id_sem);
+
+		waitS(id_sem);
+
 		// Avaluar tipus de xoc
 		hiha_elemD = 0;
-		waitS(id_sem);
 		for (i = 0; i < long_pal && hiha_elemD != 1; i++)
 		{
 			elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
@@ -76,10 +81,9 @@ void * consulta_bustia(void * cap)
 				hiha_elemD = 1;
 			// Paleta
 			else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
-						(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
+					(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
 				hiha_elemD = 2;
 		}
-		signalS(id_sem);
 
 		// Actuar segons el xoc
 		switch (hiha_elemD)
@@ -87,7 +91,6 @@ void * consulta_bustia(void * cap)
 		// CASOS FINALS
 		// Moure paleta cap a darrere
 		case 0:
-			waitS(id_sem);
 			for (i = 0; i < long_pal; i++)
 			{
 				// Esborrar pos actual
@@ -96,22 +99,32 @@ void * consulta_bustia(void * cap)
 				win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori, '0' + ind_pantalla, INVERS);
 			}
 			p_mem->col_pal_maq[ind]+=sentit_hori;
+
 			signalS(id_sem);
+			
 			break;
 		// Esborrar paleta de pantalla i eliminar procés
 		case 1:
-			waitS(id_sem);
 			// Esborrar paleta
 			for (i = 0; i < long_pal; i++)
 				win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
 			// Acaba procés
 			p_mem->pal_es_viva[ind] = 0;
+			
+			p_mem->hiha_pal_viva = 0;
+			for (i = 0; i < MAX_PAL_MAQ; i++)
+				if (p_mem->pal_es_viva[i] == 1)
+					p_mem->hiha_pal_viva = 1;
 
 			signalS(id_sem);
+			
 			break;
 
 		// CAS RECURSIU
 		case 2:
+			
+			signalS(id_sem);
+
 			// Transmets xoc a totes les paletes que hi hagi darrera
 			for (i = 0; i < long_pal; i++)
 			{
@@ -123,13 +136,11 @@ void * consulta_bustia(void * cap)
 				
 				// Si no hem enviat el missatje ja i 
 				// l'element és dins el rang d'indexos possibles de paletes, enviem el missatge
-				if (!elem_repetit &&
+				if (elem_repetit != 0 &&
 					(int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
 					(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
 				{
-					waitS(id_sem);
 					id_bustia = p_mem->ids_busties[(int) (elem_darrere[i] - '0')  - 1];
-					signalS(id_sem);
 
 					sendM(id_bustia, &sentit_hori, LONG_MISS);
 				}

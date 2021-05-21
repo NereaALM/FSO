@@ -95,9 +95,9 @@ int num_pal_maq;
 
 // Memoria compartida
 int id_taulell;
-int * p_taulell;
+int *p_taulell;
 int id_mem;
-mem_compartida * p_mem;
+mem_compartida *p_mem;
 mem_compartida mem_comp;
 
 // Sincronisme
@@ -114,12 +114,12 @@ int id_sem;
 // tinent al SO (segons comentaris del principi del programa).
 // Input:
 // - nom_fitxer amb camp de joc
-void carrega_parametres(const char * nom_fit)
+void carrega_parametres(const char *nom_fit)
 {
 	FILE *fit;
 
 	// Obrir fitxer
-	fit = fopen(nom_fit, "rt"); 
+	fit = fopen(nom_fit, "rt");
 	if (fit == NULL)
 	{
 		fprintf(stderr, "No s'ha pogut obrir el fitxer \'%s\'\n", nom_fit);
@@ -209,7 +209,7 @@ int inicialitza_joc(int num_pal_maq)
 	char strin[51];
 
 	// Taulell
-	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS); 
+	retwin = win_ini(&nFil_taulell, &nCol_taulell, '+', INVERS);
 
 	if (retwin < 0) // si no pot crear l'entorn de joc amb les curses
 	{
@@ -238,7 +238,7 @@ int inicialitza_joc(int num_pal_maq)
 	win_set(p_taulell, nFil_taulell, nCol_taulell);
 
 	// Porteries
-	i_port = nFil_taulell / 2 - mida_porteria / 2; 
+	i_port = nFil_taulell / 2 - mida_porteria / 2;
 	if (nFil_taulell % 2 == 0)
 		i_port--;
 	if (i_port == 0)
@@ -259,7 +259,7 @@ int inicialitza_joc(int num_pal_maq)
 		win_escricar(fil_pal_usu + i, col_pal_usu, '0', INVERS); // dibuixar paleta inicialment
 
 	// Paletes ordinador
-	for(int n_paleta = 0; n_paleta < num_pal_maq; n_paleta++)
+	for (int n_paleta = 0; n_paleta < num_pal_maq; n_paleta++)
 	{
 		for (i = 0; i < long_pal; i++)
 		{
@@ -275,10 +275,10 @@ int inicialitza_joc(int num_pal_maq)
 	win_escricar(fil_pilota, col_pilota, '.', INVERS); // dibuix inicial pilota
 
 	// Instruccions
-	sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir.", 
+	sprintf(strin, "Tecles: \'%c\'-> amunt, \'%c\'-> avall, RETURN-> sortir.",
 			TEC_AMUNT, TEC_AVALL);
 	win_escristr(strin);
-	
+
 	return 0;
 }
 
@@ -288,7 +288,7 @@ int inicialitza_joc(int num_pal_maq)
 //	 0 ==> la pilota ha sortit per la porteria esquerra
 //	>0 ==> la pilota ha sortit per la porteria dreta
 // cap no conte informacio
-void * moure_pilota(void * cap)
+void *moure_pilota(void *cap)
 {
 	// Moviments
 	int fil_hipo;
@@ -317,38 +317,38 @@ void * moure_pilota(void * cap)
 		// Calcul de posicio hipotetica de la pilota
 		fil_hipo = fil_pilota_R + v_fil_pilota_R;
 		col_hipo = col_pilota_R + v_col_pilota_R;
-		
+
 		// Posicio hipotetica != pos. actual => Moviment
 		if ((fil_hipo != fil_pilota) || (col_hipo != col_pilota))
-		{	
+		{
 			// Decidir moviment
 			// provar rebot vertical
-			if (fil_hipo != fil_pilota) 
+			if (fil_hipo != fil_pilota)
 			{
 				waitS(id_sem);
 				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
-				if (rebot_vert != ' ')					   // si no hi ha res
+				if (rebot_vert != ' ')							// si no hi ha res
 				{
-					v_fil_pilota_R = -v_fil_pilota_R;	 // canvia velocitat vertical
+					v_fil_pilota_R = -v_fil_pilota_R;		  // canvia velocitat vertical
 					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
 				}
 				signalS(id_sem);
 			}
 			// provar rebot horitzontal
-			if (col_hipo != col_pilota) 
+			if (col_hipo != col_pilota)
 			{
 				waitS(id_sem);
 				rebot_hori = win_quincar(fil_pilota, col_hipo); // veure si hi ha algun obstacle
-				if (rebot_hori != ' ')					   // si no hi ha res
+				if (rebot_hori != ' ')							// si no hi ha res
 				{
 					rebot = 'h';
-					v_col_pilota_R = -v_col_pilota_R;	 // canvia velocitat horitzontal
+					v_col_pilota_R = -v_col_pilota_R;		  // canvia velocitat horitzontal
 					col_hipo = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
 				signalS(id_sem);
 			}
 			// provar rebot diagonal
-			if ((fil_hipo != fil_pilota) && (col_hipo != col_pilota)) 
+			if ((fil_hipo != fil_pilota) && (col_hipo != col_pilota))
 			{
 				waitS(id_sem);
 				rebot_diag = win_quincar(fil_hipo, col_hipo);
@@ -364,11 +364,12 @@ void * moure_pilota(void * cap)
 			}
 
 			// Sentit del moviment en l'eix horitzontal
-			if (col_hipo < col_pilota) // E -> D
-				sentit_hori = 1;
-			else if (col_hipo > col_pilota) // E <- D
+			// amb canvi de simbol pq el simbol de la velocitat ja està canviat després del rebot
+			sentit_hori = 0;
+			if (v_col_pilota_R > 0) // E -> D
 				sentit_hori = -1;
-			else sentit_hori = 0; 
+			else if (v_col_pilota_R < 0) // E <- D
+				sentit_hori = 1;
 
 			// Condició de XOC amb paleta
 			switch (rebot)
@@ -396,11 +397,11 @@ void * moure_pilota(void * cap)
 
 			// Moure pilota
 			waitS(id_sem);
-			if (win_quincar(fil_hipo, col_hipo) == ' ')					   
-			{													   
+			if (win_quincar(fil_hipo, col_hipo) == ' ')
+			{
 				// Esborrar pilota vella
-				win_escricar(fil_pilota, col_pilota, ' ', NO_INV); 
-				
+				win_escricar(fil_pilota, col_pilota, ' ', NO_INV);
+
 				// Actualitzar floats de posició amb velocitats
 				fil_pilota_R += v_fil_pilota_R;
 				col_pilota_R += v_col_pilota_R;
@@ -409,9 +410,9 @@ void * moure_pilota(void * cap)
 				fil_pilota = fil_hipo;
 				col_pilota = col_hipo;
 
-				// Pilota dins el taulell								
-				if ((col_pilota > 0) && (col_pilota <= nCol_taulell)) 
-					win_escricar(fil_pilota, col_pilota, '.', INVERS); 		
+				// Pilota dins el taulell
+				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))
+					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 				// Pilota fora del taulell => GOL
 				else if (col_pilota <= 0)
 				{
@@ -424,22 +425,22 @@ void * moure_pilota(void * cap)
 					fil_pilota_R = fil_pilota;
 					col_pilota_R = col_pilota;
 					win_escricar(fil_pilota, col_pilota, '.', INVERS);
-					
+
 					// Inicialitzar velocitat
 					v_fil_pilota_R = v_fil_pilota_ini_R;
 					v_col_pilota_R = v_col_pilota_ini_R;
-					if( v_col_pilota_R < 0)
+					if (v_col_pilota_R < 0)
 						v_col_pilota_R = -v_col_pilota_R;
 				}
 				else if (col_pilota > nCol_taulell)
 				{
 					gols_usuari++;
 					p_mem->num_pilotes--;
-					
+
 					trobada = 0;
 					for (i = 0; i < num_pal_maq && trobada == 0; i++)
 					{
-						if(p_mem->pal_es_viva[i] == 1)
+						if (p_mem->pal_es_viva[i] == 1)
 						{
 							// Inicialitzo pilota a porteria de paletes
 							fil_pilota = p_mem->fil_pal_maq[i] + long_pal / 2;
@@ -447,13 +448,13 @@ void * moure_pilota(void * cap)
 							fil_pilota_R = fil_pilota;
 							col_pilota_R = col_pilota;
 							win_escricar(fil_pilota, col_pilota, '.', INVERS);
-							
+
 							// Inicialitzar velocitat
 							v_fil_pilota_R = v_fil_pilota_ini_R;
 							v_col_pilota_R = v_col_pilota_ini_R;
 							if (v_col_pilota_R > 0)
 								v_col_pilota_R = -v_col_pilota_R;
-							
+
 							trobada = 1;
 						}
 					}
@@ -466,11 +467,11 @@ void * moure_pilota(void * cap)
 						fil_pilota_R = fil_pilota;
 						col_pilota_R = col_pilota;
 						win_escricar(fil_pilota, col_pilota, '.', INVERS);
-						
+
 						// Inicialitzar velocitat
 						v_fil_pilota_R = v_fil_pilota_ini_R;
 						v_col_pilota_R = v_col_pilota_ini_R;
-						if( v_col_pilota_R < 0)
+						if (v_col_pilota_R < 0)
 							v_col_pilota_R = -v_col_pilota_R;
 					}
 				}
@@ -487,14 +488,14 @@ void * moure_pilota(void * cap)
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva == 1);
 
 	return 0;
 }
 
 // funcio per moure la paleta de l'usuari en funcio de la tecla premuda
 // cap no conte informacio
-void * mou_paleta_usuari(void * cap)
+void *mou_paleta_usuari(void *cap)
 {
 	do
 	{
@@ -512,7 +513,7 @@ void * mou_paleta_usuari(void * cap)
 				win_escricar(fil_pal_usu + long_pal - 1, col_pal_usu, '0', INVERS); // impri. ultim bloc
 			}
 			signalS(id_sem);
-			
+
 			waitS(id_sem);
 			if ((p_mem->tecla == TEC_AMUNT) && (win_quincar(fil_pal_usu - 1, col_pal_usu) == ' '))
 			{
@@ -525,7 +526,7 @@ void * mou_paleta_usuari(void * cap)
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva == 1);
 
 	return 0;
 }
@@ -603,6 +604,7 @@ int main(int n_args, const char *ll_args[])
 		p_mem->v_pal_maq[i] = mem_comp.v_pal_maq[i];
 		p_mem->pal_es_viva[i] = 1;
 	}
+	p_mem->hiha_pal_viva = 1;
 
 	// Preparació d'arguments per inicialitzar processos
 	sprintf(args_proc[1], "%i", nFil_taulell);
@@ -619,14 +621,14 @@ int main(int n_args, const char *ll_args[])
 	{
 		// Creem el procés
 		pid_pal_maq[i] = fork();
-		if (pid_pal_maq[i] == (pid_t) 0)
+		if (pid_pal_maq[i] == (pid_t)0)
 		{
 			sprintf(args_proc[0], "%i", i);
 			execlp("./pal_ord4", "pal_ord4", args_proc[0], args_proc[1], args_proc[2], args_proc[3],
-					args_proc[4], args_proc[5], args_proc[6], (char *) 0);
-			
+				   args_proc[4], args_proc[5], args_proc[6], (char *)0);
+
 			// Cas d'error
-			fprintf(stderr,"Error: no puc executar el process fill\n");
+			fprintf(stderr, "Error: no puc executar el process fill\n");
 			exit(0);
 		}
 	}
@@ -644,7 +646,7 @@ int main(int n_args, const char *ll_args[])
 		t_partida_min = t_partida_s / 60;
 		t_partida_s = t_partida_s % 60;
 
-		sprintf(strin, "Marcadors: %i:%i Pilotes: %i Temps: %i:%i", 
+		sprintf(strin, "Marcadors: %i:%i Pilotes: %i Temps: %i:%i",
 				gols_maquina, gols_usuari, p_mem->num_pilotes, t_partida_min, t_partida_s);
 
 		waitS(id_sem);
@@ -653,14 +655,14 @@ int main(int n_args, const char *ll_args[])
 		signalS(id_sem);
 
 		win_retard(p_mem->retard);
-		
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0);
+
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva == 1);
 
 	//***************************** FI DE JOC *******************************
 
 	// Espera a threads
-	pthread_join(taula_threads[0], (void *)(intptr_t) thread_output);
-	pthread_join(taula_threads[1], (void *)(intptr_t) thread_output);
+	pthread_join(taula_threads[0], (void *)(intptr_t)thread_output);
+	pthread_join(taula_threads[1], (void *)(intptr_t)thread_output);
 
 	// Espera a processos i comprova que ha anat bé
 	for (i = 0; i < num_pal_maq; i++)
@@ -669,23 +671,27 @@ int main(int n_args, const char *ll_args[])
 	// Eliminar semafor
 	elim_sem(id_sem);
 
-	// Alliberar recursos
-	elim_mem(id_taulell);
-	elim_mem(id_mem);
-
+	// Alliberar recursos del taulell
 	win_fi();
-	
+	elim_mem(id_taulell);
+
 	// Mostra resultat per pantalla
 	if (p_mem->tecla == TEC_RETURN)
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
+	else if (p_mem->hiha_pal_viva == 0)
+		printf("Ha guanyat l'usuari!\n");
 	else
-	{
+	{	
 		if (gols_maquina > gols_usuari)
 			printf("Ha guanyat l'ordinador!\n");
 		else if (gols_maquina < gols_usuari)
 			printf("Ha guanyat l'usuari!\n");
-		else printf("Hi ha hagut un empat!\n");
+		else
+			printf("Hi ha hagut un empat!\n");
 	}
+
+	// Allibera memoria compartida
+	elim_mem(id_mem);
 
 	return 0;
 }

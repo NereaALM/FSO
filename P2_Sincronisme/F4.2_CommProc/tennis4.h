@@ -66,6 +66,7 @@ typedef struct
 
 	// Vida
 	int pal_es_viva[MAX_PAL_MAQ];
+	int hiha_pal_viva;
 
 	// Comunicació amb busties IPC
 	int ids_busties[MAX_PAL_MAQ];
