@@ -91,7 +91,6 @@ pthread_t taula_threads[MAX_THREADS];
 
 // Processos
 pid_t pid_pal_maq[MAX_PAL_MAQ];
-int num_pal_maq;
 
 // Memoria compartida
 int id_taulell;
@@ -162,28 +161,28 @@ void carrega_parametres(const char *nom_fit)
 	v_col_pilota_ini_R = v_col_pilota_R;
 
 	// Parametres paleta ordinador
-	num_pal_maq = 0;
+	mem_comp.num_pal_maq = 0;
 	while (!feof(fit))
 	{
-		fscanf(fit, "%d %d %f\n", &mem_comp.fil_pal_maq[num_pal_maq], &mem_comp.col_pal_maq[num_pal_maq], &mem_comp.v_pal_maq[num_pal_maq]);
-		if ((mem_comp.fil_pal_maq[num_pal_maq] < 1) || (mem_comp.fil_pal_maq[num_pal_maq] + long_pal > nFil_taulell - 2) ||
-			(mem_comp.col_pal_maq[num_pal_maq] < 5) || (mem_comp.col_pal_maq[num_pal_maq] > nCol_taulell - 2) ||
-			(mem_comp.v_pal_maq[num_pal_maq] < MIN_VEL) || (mem_comp.v_pal_maq[num_pal_maq] > MAX_VEL))
+		fscanf(fit, "%d %d %f\n", &mem_comp.fil_pal_maq[mem_comp.num_pal_maq], &mem_comp.col_pal_maq[mem_comp.num_pal_maq], &mem_comp.v_pal_maq[mem_comp.num_pal_maq]);
+		if ((mem_comp.fil_pal_maq[mem_comp.num_pal_maq] < 1) || (mem_comp.fil_pal_maq[mem_comp.num_pal_maq] + long_pal > nFil_taulell - 2) ||
+			(mem_comp.col_pal_maq[mem_comp.num_pal_maq] < 5) || (mem_comp.col_pal_maq[mem_comp.num_pal_maq] > nCol_taulell - 2) ||
+			(mem_comp.v_pal_maq[mem_comp.num_pal_maq] < MIN_VEL) || (mem_comp.v_pal_maq[mem_comp.num_pal_maq] > MAX_VEL))
 		{
 			fprintf(stderr, "Error: parametres paleta ordinador incorrectes:\n");
-			fprintf(stderr, "\t1 =< fil_pal_maq[num_pal_maq] (%d) =< nFil_taulell-long_pal-3 (%d)\n", mem_comp.fil_pal_maq[num_pal_maq],
+			fprintf(stderr, "\t1 =< fil_pal_maq[mem_comp.num_pal_maq] (%d) =< nFil_taulell-long_pal-3 (%d)\n", mem_comp.fil_pal_maq[mem_comp.num_pal_maq],
 					(nFil_taulell - long_pal - 3));
-			fprintf(stderr, "\t5 =< col_pal_maq[num_pal_maq] (%d) =< nCol_taulell-2 (%d)\n", mem_comp.col_pal_maq[num_pal_maq],
+			fprintf(stderr, "\t5 =< col_pal_maq[mem_comp.num_pal_maq] (%d) =< nCol_taulell-2 (%d)\n", mem_comp.col_pal_maq[mem_comp.num_pal_maq],
 					(nCol_taulell - 2));
-			fprintf(stderr, "\t%.1f =< mem_comp.v_pal_maq[num_pal_maq] (%.1f) =< %.1f\n", MIN_VEL, mem_comp.v_pal_maq[num_pal_maq], MAX_VEL);
+			fprintf(stderr, "\t%.1f =< mem_comp.v_pal_maq[mem_comp.num_pal_maq] (%.1f) =< %.1f\n", MIN_VEL, mem_comp.v_pal_maq[mem_comp.num_pal_maq], MAX_VEL);
 			fclose(fit);
 			exit(5);
 		}
-		num_pal_maq++;
+		mem_comp.num_pal_maq++;
 	}
 
 	// Nombre de paletes valid
-	if (num_pal_maq < MIN_PAL_MAQ || num_pal_maq > MAX_PAL_MAQ)
+	if (mem_comp.num_pal_maq < MIN_PAL_MAQ || mem_comp.num_pal_maq > MAX_PAL_MAQ)
 	{
 		fprintf(stderr, "Error: nombre de paletes fora de rang\n");
 		exit(5);
@@ -199,7 +198,7 @@ void carrega_parametres(const char *nom_fit)
 // - numero de paletes de la maquina a inicialitzar
 // Parametres de Sortida:
 // - != 0 => error
-int inicialitza_joc(int num_pal_maq)
+int inicialitza_joc()
 {
 	int i;
 	int i_port;
@@ -259,7 +258,7 @@ int inicialitza_joc(int num_pal_maq)
 		win_escricar(fil_pal_usu + i, col_pal_usu, '0', INVERS); // dibuixar paleta inicialment
 
 	// Paletes ordinador
-	for (int n_paleta = 0; n_paleta < num_pal_maq; n_paleta++)
+	for (int n_paleta = 0; n_paleta < mem_comp.num_pal_maq; n_paleta++)
 	{
 		for (i = 0; i < long_pal; i++)
 		{
@@ -293,12 +292,9 @@ void *moure_pilota(void *cap)
 	// Moviments
 	int fil_hipo;
 	int col_hipo;
-	char rebot_hori;
-	char rebot_vert;
-	char rebot_diag;
+	char rebots[3];
 
 	// Missatges / Xocs
-	char rebot;
 	int sentit_hori;
 	int ind_pal;
 	int id_bustia;
@@ -311,8 +307,8 @@ void *moure_pilota(void *cap)
 	do
 	{
 		// Condicions inicials
-		rebot = 0;
-		rebot_hori = rebot_vert = rebot_diag = ' ';
+		for (i = 0; i < 3; i++)
+			rebots[i] = ' ';
 
 		// Calcul de posicio hipotetica de la pilota
 		fil_hipo = fil_pilota_R + v_fil_pilota_R;
@@ -326,8 +322,8 @@ void *moure_pilota(void *cap)
 			if (fil_hipo != fil_pilota)
 			{
 				waitS(id_sem);
-				rebot_vert = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
-				if (rebot_vert != ' ')							// si no hi ha res
+				rebots[0] = win_quincar(fil_hipo, col_pilota); // veure si hi ha algun obstacle
+				if (rebots[0] != ' ')							// si no hi ha res
 				{
 					v_fil_pilota_R = -v_fil_pilota_R;		  // canvia velocitat vertical
 					fil_hipo = fil_pilota_R + v_fil_pilota_R; // actualitza posicio hipotetica
@@ -338,10 +334,9 @@ void *moure_pilota(void *cap)
 			if (col_hipo != col_pilota)
 			{
 				waitS(id_sem);
-				rebot_hori = win_quincar(fil_pilota, col_hipo); // veure si hi ha algun obstacle
-				if (rebot_hori != ' ')							// si no hi ha res
+				rebots[1] = win_quincar(fil_pilota, col_hipo); // veure si hi ha algun obstacle
+				if (rebots[1] != ' ')							// si no hi ha res
 				{
-					rebot = 'h';
 					v_col_pilota_R = -v_col_pilota_R;		  // canvia velocitat horitzontal
 					col_hipo = col_pilota_R + v_col_pilota_R; // actualitza posicio hipotetica
 				}
@@ -351,10 +346,9 @@ void *moure_pilota(void *cap)
 			if ((fil_hipo != fil_pilota) && (col_hipo != col_pilota))
 			{
 				waitS(id_sem);
-				rebot_diag = win_quincar(fil_hipo, col_hipo);
-				if (rebot_diag != ' ') // si no hi ha obstacle
+				rebots[2] = win_quincar(fil_hipo, col_hipo);
+				if (rebots[2] != ' ') // si no hi ha obstacle
 				{
-					rebot = 'd';
 					v_fil_pilota_R = -v_fil_pilota_R;
 					v_col_pilota_R = -v_col_pilota_R; // canvia velocitats
 					fil_hipo = fil_pilota_R + v_fil_pilota_R;
@@ -372,46 +366,32 @@ void *moure_pilota(void *cap)
 				sentit_hori = -1;
 
 			// Condició de XOC amb paleta
-			switch (rebot)
+			ind_pal = -1;
+			for (i = 0; i < 3 && ind_pal==-1; i++)
 			{
-			case 'h':
-				ind_pal = rebot_hori - '0';
-				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
-				{
-					id_bustia = p_mem->ids_busties[ind_pal - 1];
-					
-					sendM(id_bustia, &sentit_hori, LONG_MISS);
+				ind_pal = rebots[i] - '0';
+				if(ind_pal < MIN_PAL_MAQ || ind_pal > MAX_PAL_MAQ)
+					ind_pal = -1;
+			}			
+			if (sentit_hori != 0 && ind_pal != -1)
+			{
+				id_bustia = p_mem->ids_busties[ind_pal - 1];
+				
+				sendM(id_bustia, &sentit_hori, LONG_MISS);
 
-					waitS(id_sem);
-					p_mem->miss_pendents[ind_pal - 1]++;
-					signalS(id_sem);
-				}
-				break;
-			case 'd':
-				ind_pal = rebot_diag - '0';
-				if (ind_pal >= MIN_PAL_MAQ && ind_pal <= MAX_PAL_MAQ)
-				{
-					id_bustia = p_mem->ids_busties[ind_pal - 1];
-					
-					sendM(id_bustia, &sentit_hori, LONG_MISS);
-
-					waitS(id_sem);
-					p_mem->miss_pendents[ind_pal - 1]++;
-					signalS(id_sem);
-				}
-				break;
-			default:
-				// No hi ha rebot o es vertical i per tant no cal que es mogui la paleta
-				break;
+				waitS(id_sem);
+				p_mem->miss_pendents[ind_pal - 1]++;
+				signalS(id_sem);
 			}
 
 			// Moure pilota
 			waitS(id_sem);
+			
+			// Esborrar pilota vella
+			win_escricar(fil_pilota, col_pilota, ' ', NO_INV);
+			
 			if (win_quincar(fil_hipo, col_hipo) == ' ')
 			{
-				// Esborrar pilota vella
-				win_escricar(fil_pilota, col_pilota, ' ', NO_INV);
-
 				// Actualitzar floats de posició amb velocitats
 				fil_pilota_R += v_fil_pilota_R;
 				col_pilota_R += v_col_pilota_R;
@@ -419,12 +399,9 @@ void *moure_pilota(void *cap)
 				// Escriure pilota actual
 				fil_pilota = fil_hipo;
 				col_pilota = col_hipo;
-
-				// Pilota dins el taulell
-				if ((col_pilota > 0) && (col_pilota <= nCol_taulell))
-					win_escricar(fil_pilota, col_pilota, '.', INVERS);
+				
 				// Pilota fora del taulell => GOL
-				else if (col_pilota <= 0)
+				if (col_pilota <= 0)
 				{
 					gols_maquina++;
 					p_mem->num_pilotes--;
@@ -434,7 +411,6 @@ void *moure_pilota(void *cap)
 					col_pilota = col_pal_usu + 1;
 					fil_pilota_R = fil_pilota;
 					col_pilota_R = col_pilota;
-					win_escricar(fil_pilota, col_pilota, '.', INVERS);
 
 					// Inicialitzar velocitat
 					v_fil_pilota_R = v_fil_pilota_ini_R;
@@ -448,16 +424,15 @@ void *moure_pilota(void *cap)
 					p_mem->num_pilotes--;
 
 					trobada = 0;
-					for (i = 0; i < num_pal_maq && trobada == 0; i++)
+					for (i = 0; i < p_mem->num_pal_maq && trobada == 0; i++)
 					{
-						if (p_mem->pal_es_viva[i] == 1)
+						if (p_mem->pal_es_viva[i])
 						{
 							// Inicialitzo pilota a porteria de paletes
 							fil_pilota = p_mem->fil_pal_maq[i] + long_pal / 2;
 							col_pilota = p_mem->col_pal_maq[i] - 1;
 							fil_pilota_R = fil_pilota;
 							col_pilota_R = col_pilota;
-							win_escricar(fil_pilota, col_pilota, '.', INVERS);
 
 							// Inicialitzar velocitat
 							v_fil_pilota_R = v_fil_pilota_ini_R;
@@ -470,6 +445,8 @@ void *moure_pilota(void *cap)
 					}
 				}
 			}
+			win_escricar(fil_pilota, col_pilota, '.', INVERS);
+
 			signalS(id_sem);
 		}
 		// Si la fila i la columna hipotetiques son iguals a les actuals
@@ -482,7 +459,7 @@ void *moure_pilota(void *cap)
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva == 1);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva);
 
 	return 0;
 }
@@ -520,7 +497,7 @@ void *mou_paleta_usuari(void *cap)
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva == 1);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva);
 
 	return 0;
 }
@@ -576,7 +553,7 @@ int main(int n_args, const char *ll_args[])
 	//************** INICIALITZACIONS & CONTROL D'ERRORS ********************
 
 	// Creacio del taulell de joc
-	if (inicialitza_joc(num_pal_maq) != 0)
+	if (inicialitza_joc() != 0)
 		exit(6);
 
 	// Inicialitzacio de variables de threads
@@ -590,7 +567,8 @@ int main(int n_args, const char *ll_args[])
 	p_mem = map_mem(id_mem);
 	p_mem->retard = mem_comp.retard;
 	p_mem->num_pilotes = mem_comp.num_pilotes;
-	for (i = 0; i < num_pal_maq; i++)
+	p_mem->num_pal_maq = mem_comp.num_pal_maq;
+	for (i = 0; i < p_mem->num_pal_maq; i++)
 	{
 		p_mem->fil_pal_maq[i] = mem_comp.fil_pal_maq[i];
 		p_mem->col_pal_maq[i] = mem_comp.col_pal_maq[i];
@@ -612,7 +590,7 @@ int main(int n_args, const char *ll_args[])
 	//****************************** JOC ***********************************
 
 	// Creació de processos
-	for (i = 0; i < num_pal_maq; i++)
+	for (i = 0; i < p_mem->num_pal_maq; i++)
 	{
 		// Creem el procés
 		pid_pal_maq[i] = fork();
@@ -651,7 +629,7 @@ int main(int n_args, const char *ll_args[])
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva == 1);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva);
 
 	//***************************** FI DE JOC *******************************
 
@@ -660,7 +638,7 @@ int main(int n_args, const char *ll_args[])
 	pthread_join(taula_threads[1], (void *)(intptr_t)thread_output);
 
 	// Espera a processos i comprova que ha anat bé
-	for (i = 0; i < num_pal_maq; i++)
+	for (i = 0; i < p_mem->num_pal_maq; i++)
 		waitpid(pid_pal_maq[i], 0, 0);
 
 	// Eliminar semafor

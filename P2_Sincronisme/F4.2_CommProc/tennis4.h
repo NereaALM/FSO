@@ -56,6 +56,7 @@ typedef struct
 	int retard; // [ms]
 	int tecla;
 	int num_pilotes;
+	int num_pal_maq;
 
 	// DADES DE PALETES
 	// Posició i velocitat

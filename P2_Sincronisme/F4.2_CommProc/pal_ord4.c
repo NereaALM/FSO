@@ -59,6 +59,8 @@ void rebre_xoc(int sentit_hori)
 
 	waitS(id_sem);
 
+	win_retard(500);
+
 	// Avaluar tipus de xoc mirant elements de darrere
 	hiha_elemD = 0;
 	for (i = 0; i < long_pal && hiha_elemD != 1; i++)
@@ -70,7 +72,7 @@ void rebre_xoc(int sentit_hori)
 			hiha_elemD = 1;
 		// Xoc amb paleta
 		else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
-				(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
+				(int) (elem_darrere[i] - '0') <= p_mem->num_pal_maq)
 			hiha_elemD = 2;
 	}
 
@@ -101,9 +103,8 @@ void rebre_xoc(int sentit_hori)
 		p_mem->pal_es_viva[ind] = 0;
 		
 		p_mem->hiha_pal_viva = 0;
-		for (i = 0; i < MAX_PAL_MAQ; i++)
-			if (p_mem->pal_es_viva[i] == 1)
-				p_mem->hiha_pal_viva = 1;
+		for (i = 0; i < p_mem->num_pal_maq && p_mem->hiha_pal_viva == 0; i++)
+			p_mem->hiha_pal_viva = p_mem->pal_es_viva[i];
 
 		signalS(id_sem);
 		
@@ -119,24 +120,24 @@ void rebre_xoc(int sentit_hori)
 		{
 			// Em busco a mi mateix en els elements visistats per evitar reenviar missatges
 			elem_repetit = 0;
-			for (j = i; j > 0 && !elem_repetit; j--)
+			for (j = i - 1; j >= 0 && !elem_repetit; j--)
 				if (elem_darrere[i] == elem_darrere[j])
 					elem_repetit = 1;
 			
 			// Si no hem enviat el missatje ja i 
 			// l'element és dins el rang d'indexos possibles de paletes, enviem el missatge
-			if (elem_repetit != 0 &&
+			if (!elem_repetit &&
 				(int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
-				(int) (elem_darrere[i] - '0') <= MAX_PAL_MAQ)
+				(int) (elem_darrere[i] - '0') <= p_mem->num_pal_maq)
 			{
 				index_elem = (int) (elem_darrere[i] - '0')  - 1;
 				id_bustia = p_mem->ids_busties[index_elem];
 
+				sendM(id_bustia, &sentit_hori, LONG_MISS);
+
 				waitS(id_sem);
 				p_mem->miss_pendents[index_elem]++;
 				signalS(id_sem);
-
-				sendM(id_bustia, &sentit_hori, LONG_MISS);
 			}
 		}
 		break;
@@ -206,57 +207,56 @@ int main(int n_args, const char *ll_args[])
 			rebre_xoc(sentit_hori);
 
 			waitS(id_sem);
-			fprintf(stdout, "Sentit horitzontal: %i\n", sentit_hori);
-			signalS(id_sem);
-
-			waitS(id_sem);
 			p_mem->miss_pendents[ind]--;
 			signalS(id_sem);
 		}
 
-		// Moure paleta
-		fil_hipo = p_mem->pVertical_pal_maq[ind] + p_mem->v_pal_maq[ind]; // posicio hipotetica de la paleta
-		if (fil_hipo != p_mem->fil_pal_maq[ind])				 // si pos. hipotetica no coincideix amb pos. actual
+		if (p_mem->pal_es_viva[ind])
 		{
-			if (p_mem->v_pal_maq[ind] > 0.0) // verificar moviment cap avall
+			// Moure paleta
+			fil_hipo = p_mem->pVertical_pal_maq[ind] + p_mem->v_pal_maq[ind]; // posicio hipotetica de la paleta
+			if (fil_hipo != p_mem->fil_pal_maq[ind])				 // si pos. hipotetica no coincideix amb pos. actual
+			{
+				if (p_mem->v_pal_maq[ind] > 0.0) // verificar moviment cap avall
+				{
+					waitS(id_sem);
+					if (win_quincar(fil_hipo + long_pal - 1, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
+					{
+						win_escricar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind], ' ', NO_INV); // esborra primer bloc
+						p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind];
+						p_mem->fil_pal_maq[ind] = p_mem->pVertical_pal_maq[ind];									// actualitza posicio
+						win_escricar(p_mem->fil_pal_maq[ind] + long_pal - 1, p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS); // impr. ultim bloc
+					}
+					else // si hi ha obstacle, canvia el sentit del moviment
+						p_mem->v_pal_maq[ind] = -p_mem->v_pal_maq[ind];
+					signalS(id_sem);
+				}
+				else // verificar moviment cap amunt
+				{
+					waitS(id_sem);
+					if (win_quincar(fil_hipo, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
+					{
+						win_escricar(p_mem->fil_pal_maq[ind] + long_pal - 1, p_mem->col_pal_maq[ind], ' ', NO_INV); // esbo. ultim bloc
+						p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind];
+						p_mem->fil_pal_maq[ind] = p_mem->pVertical_pal_maq[ind];					 // actualitza posicio
+						win_escricar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS); // impr. primer bloc
+					}
+					else // si hi ha obstacle, canvia el sentit del moviment
+						p_mem->v_pal_maq[ind] = -p_mem->v_pal_maq[ind];
+					signalS(id_sem);
+				}
+			}
+			else
 			{
 				waitS(id_sem);
-				if (win_quincar(fil_hipo + long_pal - 1, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
-				{
-					win_escricar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind], ' ', NO_INV); // esborra primer bloc
-					p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind];
-					p_mem->fil_pal_maq[ind] = p_mem->pVertical_pal_maq[ind];									// actualitza posicio
-					win_escricar(p_mem->fil_pal_maq[ind] + long_pal - 1, p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS); // impr. ultim bloc
-				}
-				else // si hi ha obstacle, canvia el sentit del moviment
-					p_mem->v_pal_maq[ind] = -p_mem->v_pal_maq[ind];
+				p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind]; // actualitza posicio vertical real de la paleta
 				signalS(id_sem);
 			}
-			else // verificar moviment cap amunt
-			{
-				waitS(id_sem);
-				if (win_quincar(fil_hipo, p_mem->col_pal_maq[ind]) == ' ') // si no hi ha obstacle
-				{
-					win_escricar(p_mem->fil_pal_maq[ind] + long_pal - 1, p_mem->col_pal_maq[ind], ' ', NO_INV); // esbo. ultim bloc
-					p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind];
-					p_mem->fil_pal_maq[ind] = p_mem->pVertical_pal_maq[ind];					 // actualitza posicio
-					win_escricar(p_mem->fil_pal_maq[ind], p_mem->col_pal_maq[ind], '0' + ind_pantalla, INVERS); // impr. primer bloc
-				}
-				else // si hi ha obstacle, canvia el sentit del moviment
-					p_mem->v_pal_maq[ind] = -p_mem->v_pal_maq[ind];
-				signalS(id_sem);
-			}
-		}
-		else
-		{
-			waitS(id_sem);
-			p_mem->pVertical_pal_maq[ind] += p_mem->v_pal_maq[ind]; // actualitza posicio vertical real de la paleta
-			signalS(id_sem);
+
+			win_retard(p_mem->retard);
 		}
 
-		win_retard(p_mem->retard);
-
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0  && p_mem->pal_es_viva[ind] == 1);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0  && p_mem->pal_es_viva[ind]);
 
 	//***************************** FI DE JOC *******************************
 
