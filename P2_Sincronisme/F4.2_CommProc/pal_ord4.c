@@ -40,7 +40,9 @@ int id_sem;
 // 	FUNCIONS
 ///**************************************************************************
 
-// Codi de consultar si hi ha missatges nous
+// Quan es rep un xoc pots efectuar un moviment cap enrere, transmetre el xoc
+// o sortir de taulell. Aquesta funció efectua aquestes accions.
+// Per mirar el que hi ha darrere necessita consultar el sentit horitzontal
 void rebre_xoc(int sentit_hori)
 {
 	// Elements de darrere de la paleta actual
@@ -68,8 +70,9 @@ void rebre_xoc(int sentit_hori)
 		elem_darrere[i] = win_quincar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind] + sentit_hori);
 
 		// Xoc amb taulell
-		if (elem_darrere[i] == '+')
+		if (p_mem->col_pal_maq[ind] + sentit_hori >= nCol_taulell - 1)
 			hiha_elemD = 1;
+		
 		// Xoc amb paleta
 		else if ((int) (elem_darrere[i] - '0') >= MIN_PAL_MAQ &&
 				(int) (elem_darrere[i] - '0') <= p_mem->num_pal_maq)
@@ -101,10 +104,7 @@ void rebre_xoc(int sentit_hori)
 			win_escricar(p_mem->fil_pal_maq[ind] + i, p_mem->col_pal_maq[ind], ' ', NO_INV);
 		// Acaba procés
 		p_mem->pal_es_viva[ind] = 0;
-		
-		p_mem->hiha_pal_viva = 0;
-		for (i = 0; i < p_mem->num_pal_maq && p_mem->hiha_pal_viva == 0; i++)
-			p_mem->hiha_pal_viva = p_mem->pal_es_viva[i];
+		p_mem->num_pal_vives--;
 
 		signalS(id_sem);
 		

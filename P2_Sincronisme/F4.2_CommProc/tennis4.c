@@ -459,7 +459,7 @@ void *moure_pilota(void *cap)
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->num_pal_vives > 0);
 
 	return 0;
 }
@@ -497,7 +497,7 @@ void *mou_paleta_usuari(void *cap)
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->num_pal_vives > 0);
 
 	return 0;
 }
@@ -577,7 +577,7 @@ int main(int n_args, const char *ll_args[])
 		p_mem->miss_pendents[i] = 0;
 		p_mem->pal_es_viva[i] = 1;
 	}
-	p_mem->hiha_pal_viva = 1;
+	p_mem->num_pal_vives = p_mem->num_pal_maq;
 
 	// Preparació d'arguments per inicialitzar processos
 	sprintf(args_proc[1], "%i", nFil_taulell);
@@ -586,8 +586,6 @@ int main(int n_args, const char *ll_args[])
 	sprintf(args_proc[4], "%i", id_taulell);
 	sprintf(args_proc[5], "%i", id_mem);
 	sprintf(args_proc[6], "%i", id_sem);
-
-	//****************************** JOC ***********************************
 
 	// Creació de processos
 	for (i = 0; i < p_mem->num_pal_maq; i++)
@@ -610,6 +608,8 @@ int main(int n_args, const char *ll_args[])
 	pthread_create(&taula_threads[0], NULL, moure_pilota, NULL);
 	pthread_create(&taula_threads[1], NULL, mou_paleta_usuari, NULL);
 
+	//****************************** JOC ***********************************
+
 	// Temps de la partida
 	time(&t_inicial);
 	do
@@ -629,7 +629,7 @@ int main(int n_args, const char *ll_args[])
 
 		win_retard(p_mem->retard);
 
-	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->hiha_pal_viva);
+	} while (p_mem->tecla != TEC_RETURN && p_mem->num_pilotes > 0 && p_mem->num_pal_vives > 0);
 
 	//***************************** FI DE JOC *******************************
 
@@ -651,7 +651,7 @@ int main(int n_args, const char *ll_args[])
 	// Mostra resultat per pantalla
 	if (p_mem->tecla == TEC_RETURN)
 		printf("S'ha aturat el joc amb la tecla RETURN!\n");
-	else if (p_mem->hiha_pal_viva == 0)
+	else if (p_mem->num_pal_vives <= 0)
 		printf("Ha guanyat l'usuari!\n");
 	else
 	{	
