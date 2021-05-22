@@ -58,10 +58,7 @@ void rebre_xoc(int sentit_hori)
 	int i;
 	int j;
 
-
 	waitS(id_sem);
-
-	win_retard(500);
 
 	// Avaluar tipus de xoc mirant elements de darrere
 	hiha_elemD = 0;
