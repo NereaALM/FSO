@@ -108,7 +108,6 @@ float v_col_pilota_R;
 int retard;
 
 // Gestio de la partida
-// TO DO (opcional): inicialitzar tecla a 0 si C no ho fa
 int tecla;
 int cont;
 
